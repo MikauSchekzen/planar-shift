@@ -1,0 +1,11 @@
+[
+null,
+{"id":1,"battlerName":"player-leena","characterIndex":0,"characterName":"player-leena","classId":1,"equips":[2,0,0,2,0],"faceIndex":0,"faceName":"player-leena","traits":[],"initialLevel":1,"maxLevel":99,"name":"Leena","nickname":"","note":"","profile":"A university student prodigy. Admires ambition above\nall else."},
+{"id":2,"battlerName":"npc-rodney","characterIndex":2,"characterName":"npc-family","classId":2,"equips":[3,0,0,3,0],"faceIndex":2,"faceName":"npc-family","traits":[],"initialLevel":1,"maxLevel":99,"name":"Rodney","nickname":"","note":"","profile":"A lazy lumberjack with an appetite."},
+{"id":3,"battlerName":"player-repelia","characterIndex":0,"characterName":"player-repelia","classId":3,"equips":[4,0,0,3,0],"faceIndex":0,"faceName":"player-repelia","traits":[],"initialLevel":3,"maxLevel":99,"name":"Repelia","nickname":"","note":"","profile":"A priestess of the Violet Laughter, vowed to never\nmake a frown."},
+{"id":4,"battlerName":"player-nim","characterIndex":0,"characterName":"player-nim","classId":4,"equips":[1,5,0,1,0],"faceIndex":0,"faceName":"player-nim","traits":[],"initialLevel":6,"maxLevel":99,"name":"Nim","nickname":"","note":"","profile":""},
+{"id":5,"battlerName":"player-ashly","characterIndex":0,"characterName":"player-ashly","classId":5,"equips":[6,0,0,2,0],"faceIndex":0,"faceName":"player-ashly","traits":[],"initialLevel":4,"maxLevel":99,"name":"Ashly","nickname":"","note":"","profile":""},
+{"id":6,"battlerName":"","characterIndex":0,"characterName":"","classId":1,"equips":[0,0,0,0,0],"faceIndex":0,"faceName":"","traits":[],"initialLevel":1,"maxLevel":99,"name":"","nickname":"","note":"","profile":""},
+{"id":7,"battlerName":"","characterIndex":0,"characterName":"","classId":1,"equips":[0,0,0,0,0],"faceIndex":0,"faceName":"","traits":[],"initialLevel":1,"maxLevel":99,"name":"","nickname":"","note":"","profile":""},
+{"id":8,"battlerName":"","characterIndex":0,"characterName":"","classId":1,"equips":[0,0,0,0,0],"faceIndex":0,"faceName":"","traits":[],"initialLevel":1,"maxLevel":99,"name":"","nickname":"","note":"","profile":""}
+]
