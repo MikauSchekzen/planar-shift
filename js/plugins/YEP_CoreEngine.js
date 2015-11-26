@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Core Engine
 // YEP_CoreEngine.js
-// Version: 1.01
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,7 +11,7 @@ Yanfly.Core = Yanfly.Core || {};
 
 //=============================================================================
 /*:
- * @plugindesc v1.01 Needed for the majority of Yanfly Engine Scripts. Also
+ * @plugindesc v1.06 Needed for the majority of Yanfly Engine Scripts. Also
  * contains bug fixes found inherently in RPG Maker.
  * @author Yanfly Engine Plugins
  *
@@ -28,6 +27,21 @@ Yanfly.Core = Yanfly.Core || {};
  * @desc Adjusts the height of the screen.
  * Default: 624
  * @default 624
+ *
+ * @param Scale Battlebacks
+ * @desc Do you wish to scale battlebacks to resolution?
+ * NO - false     YES - true
+ * @default true
+ *
+ * @param Scale Title
+ * @desc Do you wish to scale the title screen to resolution?
+ * NO - false     YES - true
+ * @default true
+ *
+ * @param Scale Game Over
+ * @desc Do you wish to scale the game over screen to resolution?
+ * NO - false     YES - true
+ * @default true
  *
  * @param Open Console
  * @desc For testing and debug purposes, this opens up the console.
@@ -321,12 +335,6 @@ Yanfly.Core = Yanfly.Core || {};
  *   distorted by a series of overlayed effects. The plugin fixes this issue by
  *   having only one animation played over the group instead of every one.
  *
- * Event Updating
- *   By default, a moving event at Frequency 5 stops briefly for a frame
- *   instead of continuously moving. The plugin fixes this issue to match the
- *   previous iterations of RPG Maker XP, RPG Maker VX, and RPG Maker VX Ace
- *   where the event will move nonstop.
- *
  * Event Movement Speed
  *   The movement speed of events are slightly slower than what they should be
  *   due a small error in the source code. The plugin fixes this issue and they
@@ -437,8 +445,25 @@ Yanfly.Core = Yanfly.Core || {};
  * Changelog
  * ============================================================================
  *
- * Version 1.01:
+ * Version 1.06:
+ * - Removed event frequency bug fix since it's now included in the source.
+ *
+ * Version 1.05:
+ * - Added 'Scale Game Over' parameter to plugin settings.
+ *
+ * Version 1.04:
+ * - Reworked math for calculating scaled battleback locations.
+ * - Fixed a bug where if the party failed to escape from battle, states that
+ * would be removed by battle still get removed. *Fixed by Emjenoeg*
+ *
+ * Version 1.03:
+ * - Fixed a strange bug that made scaled battlebacks shift after one battle.
+ *
+ * Version 1.02:
  * - Fixed a bug that made screen fading on mobile devices work incorrectly.
+ * - Added 'Scale Battlebacks' and 'Scale Title' parameters.
+ *
+ * Version 1.01:
  * - Fixed a bug that where if button sprites had different anchors, they would
  * not be properly clickable. *Fixed by Zalerinian*
  *
@@ -455,6 +480,9 @@ Yanfly.Parameters = PluginManager.parameters('YEP_CoreEngine');
 Yanfly.Param = Yanfly.Param || {};
 Yanfly.Icon = Yanfly.Icon || {};
 
+Yanfly.Param.ScaleBattleback = String(Yanfly.Parameters['Scale Battlebacks']);
+Yanfly.Param.ScaleTitle = String(Yanfly.Parameters['Scale Title']);
+Yanfly.Param.ScaleGameOver = String(Yanfly.Parameters['Scale Game Over']);
 Yanfly.Param.OpenConsole = String(Yanfly.Parameters['Open Console']);
 Yanfly.Param.DigitGroup = String(Yanfly.Parameters['Digit Grouping']);
 Yanfly.Param.MaxItem = Number(Yanfly.Parameters['Default Max']);
@@ -529,12 +557,12 @@ Sprite.prototype.updateTransform = function() {
 Yanfly.Core.ScreenSprite_initialize = ScreenSprite.prototype.initialize;
 ScreenSprite.prototype.initialize = function() {
     Yanfly.Core.ScreenSprite_initialize.call(this);
-    this.scale.x = Graphics.width * 4;
-    this.scale.y = Graphics.height * 4;
+    this.scale.x = Graphics.boxWidth * 10;
+    this.scale.y = Graphics.boxHeight * 10;
     this.anchor.x = 0.5;
     this.anchor.y = 0.5;
-    this.x = Graphics.boxWidth / 2;
-    this.y = Graphics.boxHeight / 2;
+    this.x = 0;
+    this.y = 0;
 };
 
 //=============================================================================
@@ -749,6 +777,82 @@ BattleManager.displayStartMessages = function() {
 	});
 };
 
+BattleManager.processEscape = function() {
+    $gameParty.performEscape();
+    SoundManager.playEscape();
+    var success = this._preemptive ? true : (Math.random() < this._escapeRatio);
+    if (success) {
+				$gameParty.removeBattleStates();
+        this.displayEscapeSuccessMessage();
+        this._escaped = true;
+        this.processAbort();
+    } else {
+        this.displayEscapeFailureMessage();
+        this._escapeRatio += 0.1;
+        $gameParty.clearActions();
+        this.startTurn();
+    }
+    return success;
+};
+
+//=============================================================================
+// Scene_Title
+//=============================================================================
+
+Yanfly.Core.Scene_Title_start = Scene_Title.prototype.start;
+Scene_Title.prototype.start = function() {
+		Yanfly.Core.Scene_Title_start.call(this);
+		if (eval(Yanfly.Param.ScaleTitle)) this.rescaleTitle();
+};
+
+Scene_Title.prototype.rescaleTitle = function() {
+		this.rescaleTitleSprite(this._backSprite1);
+		this.rescaleTitleSprite(this._backSprite2);
+};
+
+Scene_Title.prototype.rescaleTitleSprite = function(sprite) {
+		if (sprite.bitmap.width <= 0 || sprite.bitmap <= 0) return;
+		var width = Graphics.boxWidth;
+		var height = Graphics.boxHeight;
+		var ratioX = width / sprite.bitmap.width;
+		var ratioY = height / sprite.bitmap.height;
+		if (ratioX > 1.0) sprite.scale.x = ratioX;
+		if (ratioY > 1.0) sprite.scale.y = ratioY;
+		this.centerSprite(sprite);
+};
+
+//=============================================================================
+// Scene_Gameover
+//=============================================================================
+
+Yanfly.Core.Scene_Gameover_start = Scene_Gameover.prototype.start;
+Scene_Gameover.prototype.start = function() {
+    Yanfly.Core.Scene_Gameover_start.call(this);
+		if (eval(Yanfly.Param.ScaleGameOver)) this.rescaleBackground();
+};
+
+Scene_Gameover.prototype.rescaleBackground = function() {
+		this.rescaleImageSprite(this._backSprite);
+};
+
+Scene_Gameover.prototype.rescaleImageSprite = function(sprite) {
+		if (sprite.bitmap.width <= 0 || sprite.bitmap <= 0) return;
+		var width = Graphics.boxWidth;
+		var height = Graphics.boxHeight;
+		var ratioX = width / sprite.bitmap.width;
+		var ratioY = height / sprite.bitmap.height;
+		if (ratioX > 1.0) sprite.scale.x = ratioX;
+		if (ratioY > 1.0) sprite.scale.y = ratioY;
+		this.centerSprite(sprite);
+};
+
+Scene_Gameover.prototype.centerSprite = function(sprite) {
+    sprite.x = Graphics.width / 2;
+    sprite.y = Graphics.height / 2;
+    sprite.anchor.x = 0.5;
+    sprite.anchor.y = 0.5;
+};
+
 //=============================================================================
 // Sprite_Animation
 //=============================================================================
@@ -820,6 +924,50 @@ Sprite_Button.prototype.isButtonTouched = function() {
 };
 
 //=============================================================================
+// Spriteset_Battle
+//=============================================================================
+
+if (eval(Yanfly.Param.ScaleBattleback)) {
+
+Yanfly.Core.Spriteset_Battle_locateBattleback =
+		Spriteset_Battle.prototype.locateBattleback;
+Spriteset_Battle.prototype.locateBattleback = function() {
+		var sprite1 = this._back1Sprite;
+		var sprite2 = this._back2Sprite;
+		if (sprite1.bitmap.width <= 0) return;
+		if (sprite2.bitmap.width <= 0) return;
+		if (this._rescaledBattlebackSprite) return;
+		this._rescaledBattlebackSprite = true;
+		Yanfly.Core.Spriteset_Battle_locateBattleback.call(this);
+		this.rescaleBattlebacks();
+};
+
+Spriteset_Battle.prototype.rescaleBattlebacks = function() {
+		this.rescaleBattlebackSprite(this._back1Sprite);
+		this.rescaleBattlebackSprite(this._back2Sprite);
+};
+
+Spriteset_Battle.prototype.rescaleBattlebackSprite = function(sprite) {
+	if (sprite.bitmap.width <= 0 || sprite.bitmap <= 0) return;
+	var width = Graphics.boxWidth;
+	var height = Graphics.boxHeight;
+	var ratioX = width / sprite.bitmap.width;
+	var ratioY = height / sprite.bitmap.height;
+	if (ratioX > 1.0) {
+		sprite.scale.x = ratioX;
+		sprite.anchor.x = 0.5;
+		sprite.x = width / 2;
+	}
+	if (ratioY > 1.0) {
+		sprite.scale.y = ratioY;
+		sprite.origin.y = 0;
+		sprite.y = 0;
+	}
+};
+
+}; // Yanfly.Param.ScaleBattleback
+
+//=============================================================================
 // Game_BattlerBase
 //=============================================================================
 
@@ -839,7 +987,7 @@ Game_BattlerBase.prototype.paramMax = function(paramId) {
 
 Yanfly.Core.Game_Actor_isMaxLevel = Game_Actor.prototype.isMaxLevel;
 Game_Actor.prototype.isMaxLevel = function() {
-		if (this.maxLevel() == 0) return false;
+		if (this.maxLevel() === 0) return false;
     return Yanfly.Core.Game_Actor_isMaxLevel.call(this);
 };
 
@@ -907,29 +1055,6 @@ Game_Map.prototype.adjustY = function(y) {
     } else {
         return y - this.displayY();
     }
-};
-
-//=============================================================================
-// Game_CharacterBase
-//=============================================================================
-
-Game_CharacterBase.prototype.update = function() {
-    if (this.isJumping()) {
-        this.updateJump();
-    } else if (this.isMoving()) {
-        this.updateMove();
-    }
-    if (!this.isMoving()) {
-        this.updateStop();
-    }
-    this.updateAnimation();
-};
-
-Yanfly.Core.Game_CharacterBase_updateMove =
- 		Game_CharacterBase.prototype.updateMove;
-Game_CharacterBase.prototype.updateMove = function() {
-    Yanfly.Core.Game_CharacterBase_updateMove.call(this);
-    if (!this.isMoving()) this.updateStop();
 };
 
 //=============================================================================
@@ -1459,7 +1584,6 @@ Yanfly.Util.toGroup = function(inVal) {
 	return inVal.replace(/(^|[^\w.])(\d{4,})/g, function($0, $1, $2) {
 		return $1 + $2.replace(/\d(?=(?:\d\d\d)+(?!\d))/g, "$&,");
 	});
-	return returnNum;
 };
 
 //=============================================================================

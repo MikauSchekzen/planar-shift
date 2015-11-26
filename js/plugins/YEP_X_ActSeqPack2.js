@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Battle Engine Extension - Action Sequence Pack 2
 // YEP_X_ActSeqPack2.js
-// Version: 1.00
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,8 +11,8 @@ Yanfly.ASP2 = Yanfly.ASP2 || {};
 
 //=============================================================================
  /*:
- * @plugindesc (Requires YEP_BattleEngineCore.js) Visual functions are
- * added to the Battle Engine Core's action sequences.
+ * @plugindesc v1.04 (Requires YEP_BattleEngineCore.js) Visual functions
+ * are added to the Battle Engine Core's action sequences.
  * @author Yanfly Engine Plugins
  *
  * @help
@@ -114,6 +113,7 @@ Yanfly.ASP2 = Yanfly.ASP2 || {};
  *   dead actors: This will select only dead actors.
  *   actors not user; This will select all living actors except for the user.
  *   actor x; This will select the actor in slot x.
+ *   character x; This will select the specific character with actor ID x.
  *   enemies, existing enemies; This will select all living enemies.
  *   all enemies; This will select all enemies, even dead.
  *   dead enemies: This will select only dead enemies.
@@ -272,10 +272,10 @@ Yanfly.ASP2 = Yanfly.ASP2 || {};
  *=============================================================================
  *
  *=============================================================================
- * MOTION type: target
+ * MOTION type: target, (no weapon)
  *- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  * MOTION WALK: target
- * MOTION WAIT: target
+ * MOTION STANDBY: target
  * MOTION CHANT: target
  * MOTION GUARD: target
  * MOTION DAMAGE: target
@@ -299,9 +299,12 @@ Yanfly.ASP2 = Yanfly.ASP2 || {};
  * target will automatically determine based on the weapon it has equipped to
  * use either a thrust, swing, or missile motion. Attack, thrust, swing, and
  * missile will also display the target's weapon if the target has one.
+ *
+ * If 'no weapon' is used after the target, no weapons will be displayed. This
+ * effect will only work with the Thrust, Swing, and Missile motions.
  *- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
- * Usage Example: enemy effect: targets, whiten
- *                enemy effect: targets, blink
+ * Usage Example: motion walk: user
+ *                motion thrust: user, no weapon
  *=============================================================================
  *
  *=============================================================================
@@ -416,6 +419,28 @@ Yanfly.ASP2 = Yanfly.ASP2 || {};
  *- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  * Usage Example: wait for opacity
  *=============================================================================
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.04:
+ * - Updated movement formulas.
+ *
+ * Version 1.03:
+ * - Made a change to Motion action sequence. 'Wait' is now substituted for
+ * 'Standby' as to not confuse it with the actual Motion Wait action sequence.
+ * - Added a 'no weapon' option to Motion action sequences. This new tag will
+ * only affect the 'Thrust', 'Swing', and 'Missile' motions.
+ *
+ * Version 1.02:
+ * - Added a check for motion attack to differentiate between actor and enemy.
+ *
+ * Version 1.01:
+ * - Updated help file to include Character X for target typing.
+ *
+ * Version 1.00:
+ * - Finished plugin!
  */
 //=============================================================================
 
@@ -718,10 +743,16 @@ BattleManager.actionJump = function(name, actionArgs) {
 
 BattleManager.actionMotionTarget = function(name, actionArgs) {
     if (name.toUpperCase() === 'WAIT') return this.actionMotionWait(actionArgs);
+    if (name.toUpperCase() === 'STANDBY') name = 'WAIT';
     var movers = this.makeActionTargets(actionArgs[0]);
     if (movers.length < 1) return true;
     var cmd = name.toLowerCase();
     var motion = 'wait';
+    if (actionArgs[1] && actionArgs[1].toUpperCase() === 'NO WEAPON') {
+      var showWeapon = false;
+    } else {
+      var showWeapon = true;
+    }
     if (['wait', 'chant', 'guard', 'evade', 'skill', 'spell', 'item', 'escape',
     'victory', 'dying', 'abnormal', 'sleep', 'dead'].contains(cmd)) {
       motion = cmd;
@@ -738,11 +769,13 @@ BattleManager.actionMotionTarget = function(name, actionArgs) {
       motion = cmd;
       movers.forEach(function(mover) {
         mover.forceMotion(motion);
-        var weapons = mover.weapons();
-        var wtypeId = weapons[0] ? weapons[0].wtypeId : 0;
-        var attackMotion = $dataSystem.attackMotions[wtypeId];
-        if (attackMotion && [0, 1, 2].contains(attackMotion.type)) {
-          mover.startWeaponAnimation(attackMotion.weaponImageId);
+        if (mover.isActor() && showWeapon) {
+          var weapons = mover.weapons();
+          var wtypeId = weapons[0] ? weapons[0].wtypeId : 0;
+          var attackMotion = $dataSystem.attackMotions[wtypeId];
+          if (attackMotion && [0, 1, 2].contains(attackMotion.type)) {
+            mover.startWeaponAnimation(attackMotion.weaponImageId);
+          }
         }
       });
       return false;
@@ -829,7 +862,7 @@ BattleManager.actionMove = function(name, actionArgs) {
             for (var i = 0; i < movers.length; ++i) {
               var mover = movers[i];
               if (mover && mover.spriteCanMove()) {
-                if (mover.isActor()) offset += mover.spriteWidth() / 2;
+                if (mover.isActor()) offset -= mover.spriteWidth() / 2;
                 if (mover.isEnemy()) offset -= mover.spriteWidth() / 2;
               }
             }
@@ -840,7 +873,7 @@ BattleManager.actionMove = function(name, actionArgs) {
               var mover = movers[i];
               if (mover && mover.spriteCanMove()) {
                 if (mover.isActor()) offset += mover.spriteWidth() / 2;
-                if (mover.isEnemy()) offset -= mover.spriteWidth() / 2;
+                if (mover.isEnemy()) offset += mover.spriteWidth() / 2;
               }
             }
           }
@@ -858,7 +891,7 @@ BattleManager.actionMove = function(name, actionArgs) {
             for (var i = 0; i < movers.length; ++i) {
               var mover = movers[i];
               if (mover && mover.spriteCanMove()) {
-                if (mover.isActor()) offset -= mover.spriteWidth() / 2;
+                if (mover.isActor()) offset += mover.spriteWidth() / 2;
                 if (mover.isEnemy()) offset += mover.spriteWidth() / 2;
               }
             }
@@ -869,7 +902,7 @@ BattleManager.actionMove = function(name, actionArgs) {
               var mover = movers[i];
               if (mover && mover.spriteCanMove()) {
                 if (mover.isActor()) offset -= mover.spriteWidth() / 2;
-                if (mover.isEnemy()) offset += mover.spriteWidth() / 2;
+                if (mover.isEnemy()) offset -= mover.spriteWidth() / 2;
               }
             }
           }
@@ -885,7 +918,7 @@ BattleManager.actionMove = function(name, actionArgs) {
             for (var i = 0; i < movers.length; ++i) {
               var mover = movers[i];
               if (mover && mover.spriteCanMove()) {
-                if (mover.isActor()) offset += mover.spriteWidth() / 2;
+                if (mover.isActor()) offset -= mover.spriteWidth() / 2;
                 if (mover.isEnemy()) offset -= mover.spriteWidth() / 2;
               }
             }
@@ -896,7 +929,7 @@ BattleManager.actionMove = function(name, actionArgs) {
               var mover = movers[i];
               if (mover && mover.spriteCanMove()) {
                 if (mover.isActor()) offset += mover.spriteWidth() / 2;
-                if (mover.isEnemy()) offset -= mover.spriteWidth() / 2;
+                if (mover.isEnemy()) offset += mover.spriteWidth() / 2;
               }
             }
           }
@@ -912,7 +945,7 @@ BattleManager.actionMove = function(name, actionArgs) {
             for (var i = 0; i < movers.length; ++i) {
               var mover = movers[i];
               if (mover && mover.spriteCanMove()) {
-                if (mover.isActor()) offset -= mover.spriteWidth() / 2;
+                if (mover.isActor()) offset += mover.spriteWidth() / 2;
                 if (mover.isEnemy()) offset += mover.spriteWidth() / 2;
               }
             }
@@ -923,7 +956,7 @@ BattleManager.actionMove = function(name, actionArgs) {
               var mover = movers[i];
               if (mover && mover.spriteCanMove()) {
                 if (mover.isActor()) offset -= mover.spriteWidth() / 2;
-                if (mover.isEnemy()) offset += mover.spriteWidth() / 2;
+                if (mover.isEnemy()) offset -= mover.spriteWidth() / 2;
               }
             }
           }
@@ -939,7 +972,7 @@ BattleManager.actionMove = function(name, actionArgs) {
             for (var i = 0; i < movers.length; ++i) {
               var mover = movers[i];
               if (mover && mover.spriteCanMove()) {
-                if (mover.isActor()) offset += mover.spriteWidth() / 2;
+                if (mover.isActor()) offset -= mover.spriteWidth() / 2;
                 if (mover.isEnemy()) offset -= mover.spriteWidth() / 2;
               }
             }
@@ -950,7 +983,7 @@ BattleManager.actionMove = function(name, actionArgs) {
               var mover = movers[i];
               if (mover && mover.spriteCanMove()) {
                 if (mover.isActor()) offset += mover.spriteWidth() / 2;
-                if (mover.isEnemy()) offset -= mover.spriteWidth() / 2;
+                if (mover.isEnemy()) offset += mover.spriteWidth() / 2;
               }
             }
           }

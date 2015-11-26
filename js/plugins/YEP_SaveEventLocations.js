@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Save Event Locations
 // YEP_SaveEventLocations.js
-// Version: 1.00
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,8 +11,8 @@ Yanfly.SEL = Yanfly.SEL || {};
 
 //=============================================================================
  /*:
- * @plugindesc Enable specified maps to memorize the locations of events
- * when leaving and loading them upon reentering the map.
+ * @plugindesc v1.01 Enable specified maps to memorize the locations of
+ * events when leaving and loading them upon reentering map.
  * @author Yanfly Engine Plugins
  *
  * @help
@@ -51,6 +50,16 @@ Yanfly.SEL = Yanfly.SEL || {};
  *
  * Plugin Command
  *   ResetAllEventLocations    This resets all the event locations on the map.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.01:
+ * - Fixed an incompatibility with the Set Event Location event command.
+ *
+ * Version 1.00:
+ * - Finished plugin!
  */
 //=============================================================================
 
@@ -159,7 +168,7 @@ Yanfly.SEL.Game_Event_locate = Game_Event.prototype.locate;
 Game_Event.prototype.locate = function(x, y) {
 		DataManager.processSELNotetags2(this.event());
 		Yanfly.SEL.Game_Event_locate.call(this, x, y);
-		this.loadLocation();
+		if (!$gameTemp._bypassLoadLocation) this.loadLocation();
 };
 
 Yanfly.SEL.Game_Event_updateMove = Game_Event.prototype.updateMove;
@@ -206,6 +215,15 @@ Yanfly.SEL.Game_Interpreter_pluginCommand =
 Game_Interpreter.prototype.pluginCommand = function(command, args) {
   Yanfly.SEL.Game_Interpreter_pluginCommand.call(this, command, args)
 	if (command === 'ResetAllEventLocations') $gameMap.resetAllEventLocations();
+};
+
+// Set Event Location
+Yanfly.SEL.Game_Interpreter_command203 = Game_Interpreter.prototype.command203;
+Game_Interpreter.prototype.command203 = function() {
+		$gameTemp._bypassLoadLocation = true;
+		var result = Yanfly.SEL.Game_Interpreter_command203.call(this);
+		$gameTemp._bypassLoadLocation = undefined;
+    return result;
 };
 
 //=============================================================================

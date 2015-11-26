@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Victory Aftermath
 // YEP_VictoryAftermath.js
-// Version: 1.00
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,7 +11,7 @@ Yanfly.VA = Yanfly.VA || {};
 
 //=============================================================================
  /*:
- * @plugindesc Display an informative window after a battle is over
+ * @plugindesc v1.02 Display an informative window after a battle is over
  * instead of message box text stating what the party earned.
  * @author Yanfly Engine Plugins
  *
@@ -160,6 +159,21 @@ Yanfly.VA = Yanfly.VA || {};
  *                               continue playing whatever was playing.
  *   EnableVictoryMusic        - Enables the Victory Aftermath music if it has
  *                               been previously disabled.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.02:
+ * - If the Battle HUD has been hidden for whatever reason during the victory
+ * sequence, it will be returned.
+ *
+ * Version 1.01:
+ * - Fixed a bug plugin commands that would cause some victory sequences to
+ * loop forever.
+ *
+ * Version 1.00:
+ * - Finished plugin!
  */
 //=============================================================================
 
@@ -196,9 +210,22 @@ Yanfly.Param.VABattleDrops = String(Yanfly.Parameters['Battle Drops Text']);
 // BattleManager
 //=============================================================================
 
+Yanfly.VA.BattleManager_initMembers = BattleManager.initMembers;
+BattleManager.initMembers = function() {
+    Yanfly.VA.BattleManager_initMembers.call(this);
+    this.initVictoryData();
+};
+
+BattleManager.initVictoryData = function() {
+    this._victoryPhase = false;
+    this._victoryCheerWait = 0;
+    this._victoryStep = 0;
+};
+
 BattleManager.processVictory = function() {
     $gameParty.performVictory();
     if (this.isVictoryPhase()) return;
+    if (this._windowLayer) this._windowLayer.x = 0;
     $gameParty.removeBattleStates();
     this._victoryPhase = true;
     if ($gameSystem.skipVictoryAftermath()) {

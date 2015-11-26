@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Skill Cost Extension - Cooldowns
 // YEP_X_SkillCooldowns.js
-// Version: 1.01
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,7 +11,7 @@ Yanfly.SCD = Yanfly.SCD || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.00 (Requires YEP_SkillCore.js) Cooldowns can be applied
+ * @plugindesc v1.04 (Requires YEP_SkillCore.js) Cooldowns can be applied
  * to skills to prevent them from being used continuously.
  * @author Yanfly Engine Plugins
  *
@@ -73,6 +72,18 @@ Yanfly.SCD = Yanfly.SCD || {};
  * @desc What icon to be used for warmups.
  * Use 0 for no icon.
  * @default 75
+ *
+ * @param ---Battle Core---
+ * @default
+ *
+ * @param Time Based
+ * @desc If a battle system is Tick-based, use time instead
+ * of turns for cooldowns? NO - false   YES - true
+ * @default true
+ *
+ * @param Turn Time
+ * @desc How many ticks must pass to equal 1 cooldown turn?
+ * @default 100
  *
  * @help
  * ============================================================================
@@ -338,6 +349,16 @@ Yanfly.SCD = Yanfly.SCD || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.04:
+ * - Fixed a bug that didn't alter cooldowns correctly.
+ *
+ * Version 1.03:
+ * - Optimized for Battle Engine Core v1.08.
+ *
+ * Version 1.02a:
+ * - Added return for drawSkillCost to assist others scripters when making
+ * compatibility notes.
+ *
  * Version 1.01:
  * - Cooldowns can now be applied to skills that aren't learned by the actor.
  *
@@ -370,6 +391,8 @@ for (Yanfly.i = 0; Yanfly.i < Yanfly.Param.CDBypass.length; ++Yanfly.i) {
 Yanfly.Param.WUFmt = String(Yanfly.Parameters['Warmup Format']);
 Yanfly.Param.WUFontSize = Number(Yanfly.Parameters['Warmup Font Size']);
 Yanfly.Param.WUTextColor = Number(Yanfly.Parameters['Warmup Text Color']);
+Yanfly.Param.CDTimeBased = String(Yanfly.Parameters['Time Based']);
+Yanfly.Param.CDTurnTime = Number(Yanfly.Parameters['Turn Time']);
 Yanfly.Icon.Warmup = Number(Yanfly.Parameters['Warmup Icon']);
 
 //=============================================================================
@@ -532,6 +555,15 @@ BattleManager.endBattle = function(result) {
 		$gameParty.endBattleCooldowns();
 };
 
+BattleManager.timeBasedCooldowns = function() {
+	if (!$gameParty.inBattle()) return false;
+	if (!Imported.YEP_BattleEngineCore) return false;
+	if (this.isTurnBased()) return false;
+	if (this._timeBasedCooldowns !== undefined) return this._timeBasedCooldowns;
+	this._timeBasedCooldowns = eval(Yanfly.Param.CDTimeBased);
+	return this._timeBasedCooldowns;
+};
+
 if (Imported.YEP_BattleEngineCore) {
 Yanfly.SCD.BattleManager_processActionSequence =
   BattleManager.processActionSequence;
@@ -559,7 +591,7 @@ Yanfly.SCD.BattleManager_processActionSequence =
 
 BattleManager.actionGlobalCooldown = function(actionArgs) {
 		var targets = this.makeActionTargets(actionArgs[0]);
-		if (targets.length < 1) return true
+		if (targets.length < 1) return true;
 		var cmd = actionArgs[1];
 		if (cmd.match(/([\+\-]\d+)/i)) {
 			var value = parseInt(RegExp.$1);
@@ -591,7 +623,7 @@ BattleManager.actionGlobalCooldown = function(actionArgs) {
 
 BattleManager.actionSkillCooldown = function(skillId, actionArgs) {
 		var targets = this.makeActionTargets(actionArgs[0]);
-		if (targets.length < 1) return true
+		if (targets.length < 1) return true;
 		var cmd = actionArgs[1];
 		if (cmd.match(/([\+\-]\d+)/i)) {
 			var value = parseInt(RegExp.$1);
@@ -613,7 +645,7 @@ BattleManager.actionSkillCooldown = function(skillId, actionArgs) {
 
 BattleManager.actionSTypeCooldown = function(stypeId, actionArgs) {
 		var targets = this.makeActionTargets(actionArgs[0]);
-		if (targets.length < 1) return true
+		if (targets.length < 1) return true;
 		var cmd = actionArgs[1];
 		if (cmd.match(/([\+\-]\d+)/i)) {
 			var value = parseInt(RegExp.$1);
@@ -690,6 +722,7 @@ Game_BattlerBase.prototype.addCooldown = function(skillId, value) {
     if (!$dataSkills[skillId]) return;
 		if ($dataSkills[skillId].bypassCooldown) return;
 		if (this._cooldownTurns === undefined) this.clearCooldowns();
+		if (!this._cooldownTurns[skillId]) this._cooldownTurns[skillId] = 0;
 		this._cooldownTurns[skillId] += value;
 };
 
@@ -736,6 +769,38 @@ Game_BattlerBase.prototype.updateWarmups = function() {
 			var skill = $dataSkills[skillId];
 			if (!skill) continue;
 			this._warmupTurns[skillId] -= this.cooldownRate(skill);
+		}
+};
+
+Game_BattlerBase.prototype.cooldownRateTick = function(skill) {
+		this._cooldownTickRate = this._cooldownTickRate || {};
+		if (!this._cooldownTickRate[skill.id]) {
+			this._cooldownTickRate[skill.id] = this.cooldownRate(skill);
+		}
+		var rate = this._cooldownTickRate[skill.id];
+		rate *= BattleManager.tickRate() / Yanfly.Param.CDTurnTime;
+		return rate;
+};
+
+Game_BattlerBase.prototype.updateCooldownTicks = function() {
+    if (this._cooldownTurns === undefined) this.clearCooldowns();
+		for (var skillId in this._cooldownTurns) {
+			var skill = $dataSkills[skillId];
+			if (!skill) continue;
+			if (this._cooldownTurns[skillId] <= 0) continue;
+			this._cooldownTurns[skillId] -= this.cooldownRateTick(skill);
+			this._cooldownTurns[skillId] = Math.max(0, this._cooldownTurns[skillId]);
+		}
+};
+
+Game_BattlerBase.prototype.updateWarmupTicks = function() {
+    if (this._warmupTurns === undefined) this.clearWarmups();
+		for (var skillId in this._warmupTurns) {
+			var skill = $dataSkills[skillId];
+			if (!skill) continue;
+			if (this._warmupTurns[skillId] <= 0) continue;
+			this._warmupTurns[skillId] -= this.cooldownRateTick(skill);
+			this._warmupTurns[skillId] = Math.max(0, this._warmupTurns[skillId]);
 		}
 };
 
@@ -806,9 +871,14 @@ Game_BattlerBase.prototype.payCooldownCost = function(skill) {
 };
 
 Game_BattlerBase.prototype.endBattleCooldowns = function() {
+		this.resetCooldownTickRates();
 		for (var skillId in this._cooldownTurns) {
 			this._cooldownTurns[skillId] += $dataSkills[skillId].afterBattleCooldown;
 		}
+};
+
+Game_BattlerBase.prototype.resetCooldownTickRates = function() {
+		this._cooldownTickRate = {};
 };
 
 Game_BattlerBase.prototype.updateCooldownSteps = function() {
@@ -832,6 +902,7 @@ Game_BattlerBase.prototype.applyCooldownChange = function(skill) {
 		for (var skillId in skill.cooldownChange) {
 			skillId = parseInt(skillId);
 			if (!$dataSkills[skillId]) continue;
+			if (!skill.cooldownChange[skillId]) continue;
 			var value = skill.cooldownChange[skillId];
 			this.addCooldown(skillId, value);
 		}
@@ -844,6 +915,7 @@ Game_BattlerBase.prototype.applyStypeCooldownChange = function(mainSkill) {
 				var skill = this.skills()[i];
 				if (!skill) continue;
 				if (skill.stypeId !== stypeId) continue;
+				if (!mainSkill.stypeCooldownChange[stypeId]) continue;
 				var value = mainSkill.stypeCooldownChange[stypeId];
 				this.addCooldown(skill.id, value);
 			}
@@ -878,6 +950,7 @@ Game_BattlerBase.prototype.applyCooldownMods = function(skill) {
 Yanfly.SCD.Game_Battler_onBattleStart = Game_Battler.prototype.onBattleStart;
 Game_Battler.prototype.onBattleStart = function() {
     Yanfly.SCD.Game_Battler_onBattleStart.call(this);
+		this.resetCooldownTickRates();
 		this.startWarmups();
 };
 
@@ -952,6 +1025,34 @@ Game_Battler.prototype.flatWarmupChange = function(skill) {
 		}
 		return value;
 };
+
+Yanfly.SCD.Game_Battler_refresh = Game_Battler.prototype.refresh;
+Game_Battler.prototype.refresh = function() {
+		Yanfly.SCD.Game_Battler_refresh.call(this);
+		this.resetCooldownTickRates();
+};
+
+if (Imported.YEP_BattleEngineCore) {
+
+	Yanfly.SCD.Game_Battler_onTurnStart = Game_Battler.prototype.onTurnStart;
+	Game_Battler.prototype.onTurnStart = function() {
+		Yanfly.SCD.Game_Battler_onTurnStart.call(this);
+		if (BattleManager.isTickBased() && !BattleManager.timeBasedCooldowns()) {
+			this.updateCooldowns();
+			this.updateWarmups();
+		}
+	};
+
+	Yanfly.SCD.Game_Battler_updateTick = Game_Battler.prototype.updateTick;
+	Game_Battler.prototype.updateTick = function() {
+		Yanfly.SCD.Game_Battler_updateTick.call(this);
+		if (BattleManager.isTickBased() && BattleManager.timeBasedCooldowns()) {
+			this.updateCooldownTicks();
+			this.updateWarmupTicks();
+		};
+	};
+
+}; // Imported.YEP_BattleEngineCore
 
 //=============================================================================
 // Game_Actor
@@ -1054,6 +1155,7 @@ Game_Actor.prototype.flatCooldownChange = function(skill) {
 		for (var i = 0; i < this.equips().length; ++i) {
 			var equip = this.equips()[i];
 			if (!equip) continue;
+			if (equip.cooldownChange === undefined) continue;
 			if (equip.cooldownChange[skillId] !== undefined) {
 				value += equip.cooldownChange[skillId];
 			}
@@ -1086,6 +1188,7 @@ Game_Actor.prototype.flatWarmupChange = function(skill) {
 		for (var i = 0; i < this.equips().length; ++i) {
 			var equip = this.equips()[i];
 			if (!equip) continue;
+			if (equip.warmupChange === undefined) continue;
 			if (equip.warmupChange[skillId] !== undefined) {
 				value += equip.warmupChange[skillId];
 			}
@@ -1175,7 +1278,7 @@ Game_Enemy.prototype.flatWarmupChange = function(skill) {
 Yanfly.SCD.Game_Action_applyItemUserEffect =
 		Game_Action.prototype.applyItemUserEffect;
 Game_Action.prototype.applyItemUserEffect = function(target) {
-    Yanfly.SCD.Game_Action_applyItemUserEffect.call(this);
+    Yanfly.SCD.Game_Action_applyItemUserEffect.call(this, target);
 		target.applyCooldownEffect(this.item());
 };
 
@@ -1184,6 +1287,7 @@ Game_Action.prototype.applyItemUserEffect = function(target) {
 //=============================================================================
 
 Game_Unit.prototype.updateCooldowns = function() {
+		if (BattleManager.timeBasedCooldowns()) return;
     return this.members().forEach(function(member) {
         member.updateCooldowns();
 				member.updateWarmups();
@@ -1220,8 +1324,15 @@ Game_Party.prototype.updateCooldownSteps = function() {
 Yanfly.SCD.Game_Troop_increaseTurn = Game_Troop.prototype.increaseTurn;
 Game_Troop.prototype.increaseTurn = function() {
     Yanfly.SCD.Game_Troop_increaseTurn.call(this);
-		this.updateCooldowns();
-		$gameParty.updateCooldowns();
+		if (Imported.YEP_BattleEngineCore) {
+			if (BattleManager.isTurnBased()) {
+				this.updateCooldowns();
+				$gameParty.updateCooldowns();
+			}
+		} else {
+			this.updateCooldowns();
+			$gameParty.updateCooldowns();
+		}
 };
 
 //=============================================================================
@@ -1229,13 +1340,13 @@ Game_Troop.prototype.increaseTurn = function() {
 //=============================================================================
 
 Yanfly.SCD.Window_SkillList_drawCost = Window_SkillList.prototype.drawSkillCost;
-Window_SkillList.prototype.drawSkillCost = function(skill, wx, wy, width) {
+Window_SkillList.prototype.drawSkillCost = function(skill, wx, wy, ww) {
     if (this._actor.warmup(skill.id) > 0) {
-			this.drawWarmup(skill, wx, wy, width);
+			return this.drawWarmup(skill, wx, wy, ww);
 		}	else if (this._actor.cooldown(skill.id) > 0) {
-			this.drawCooldown(skill, wx, wy, width);
+			return this.drawCooldown(skill, wx, wy, ww);
 		} else {
-			Yanfly.SCD.Window_SkillList_drawCost.call(this, skill, wx, wy, width);
+			return Yanfly.SCD.Window_SkillList_drawCost.call(this, skill, wx, wy, ww);
 		}
 };
 
@@ -1253,7 +1364,9 @@ Window_SkillList.prototype.drawCooldown = function(skill, wx, wy, dw) {
 		var text = fmt.format(Yanfly.Util.toGroup(value));
 		this.contents.fontSize = Yanfly.Param.CDFontSize;
 		this.drawText(text, wx, wy, dw, 'right');
+		var returnWidth = dw - this.textWidth(text) - Yanfly.Param.SCCCostPadding;
 		this.resetFontSettings();
+		return returnWidth;
 };
 
 Window_SkillList.prototype.drawWarmup = function(skill, wx, wy, dw) {
@@ -1270,7 +1383,9 @@ Window_SkillList.prototype.drawWarmup = function(skill, wx, wy, dw) {
 		var text = fmt.format(Yanfly.Util.toGroup(value));
 		this.contents.fontSize = Yanfly.Param.WUFontSize;
 		this.drawText(text, wx, wy, dw, 'right');
+		var returnWidth = dw - this.textWidth(text) - Yanfly.Param.SCCCostPadding;
 		this.resetFontSettings();
+		return returnWidth;
 };
 
 //=============================================================================

@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Skill Core
 // YEP_SkillCore.js
-// Version: 1.00
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,7 +11,7 @@ Yanfly.Skill = Yanfly.Skill || {};
 
 //=============================================================================
 /*:
- * @plugindesc Skills are now given more functions and the ability to
+ * @plugindesc v1.04 Skills are now given more functions and the ability to
  * require different types of costs.
  * @author Yanfly Engine Plugins
  *
@@ -29,12 +28,17 @@ Yanfly.Skill = Yanfly.Skill || {};
  * left     center     right
  * @default center
  *
+ * @param Window Columns
+ * @desc Choose how many columns to use for the skill window.
+ * Default: 2
+ * @default 2
+ *
  * @param ---HP Costs---
  * @default
  *
  * @param HP Format
  * @desc Adjusts the way HP cost appears in the skill list window.
- * %1 - Cost     %2 - MP
+ * %1 - Cost     %2 - HP
  * @default %1%2
  *
  * @param HP Font Size
@@ -205,6 +209,55 @@ Yanfly.Skill = Yanfly.Skill || {};
  *   and the TP percentage cost.
  *
  * ============================================================================
+ * Lunatic Mode - Custom Requirements and Execution
+ * ============================================================================
+ *
+ * For those with a bit of JavaScript experience, you can use the following
+ * notetags to restrict a skill and what kind of code to process when executing
+ * the said skill.
+ *
+ * Skill Notetags:
+ *
+ *   <Custom Requirement>
+ *    if ($gameParty.gold() > 1000) {
+ *      value = true;
+ *    } else {
+ *      value = false;
+ *    }
+ *   </Custom Requirement>
+ *   If value is set to true, the skill will be useable provided that all other
+ *   requirements have been met. If the value is set to false, the skill won't
+ *   be useable.
+ *
+ *   <Custom Execution>
+ *    $gameParty.loseGold(1000);
+ *   </Custom Execution>
+ *   This runs the code between the notetags upon using the skill.
+ *
+ * ============================================================================
+ * Lunatic Mode - Custom Cost Display
+ * ============================================================================
+ *
+ * For those with a bit of JavaScript experience, you can add new ways to
+ * display the skill cost.
+ *
+ * Skill Notetags:
+ *
+ *   <Cost Display Eval>
+ *    var variableId = 1;
+ *    var value = 1000;
+ *    $gameVariables.setValue(variableId, value);
+ *   </Cost Display Eval>
+ *   This notetag runs an eval before displaying the skill's cost. This is so
+ *   you can set up variables and whatnot for your skill cost display text.
+ *
+ *   <Custom Cost Display>
+ *    \c[4]\v[1]\c[0] Gold
+ *   </Custom Cost Display>
+ *   This is the custom text displayed before the rest of the skill costs. You
+ *   can use text codes with this notetag.
+ *
+ * ============================================================================
  * Lunatic Mode - The Skill Phases
  * ============================================================================
  *
@@ -232,6 +285,29 @@ Yanfly.Skill = Yanfly.Skill || {};
  *   respective notetags into the skill (or item) noteboxes and it will run the
  *   code that appears in between the tags. However, using any form of comments
  *   in this tag will block out code that follows.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.04:
+ * - Added four Lunatic Modes notetags: Custom Requirement, Custom Execution,
+ * Cost Display Eval, Custom Cost Display.
+ *
+ * Version 1.03:
+ * - Fixed a bug with the Lunatic Mode notetags not working.
+ *
+ * Version 1.02:
+ * - Added 'Window Columns' parameter to let users adjust the number of columns
+ * used for the skill window.
+ *
+ * Version 1.01:
+ * - Fixed a mathematical error for skill cost padding.
+ * - Added return for drawSkillCost to assist others scripters when making
+ * compatibility notes.
+ *
+ * Version 1.00:
+ * - Finished plugin!
  */
 //=============================================================================
 
@@ -245,6 +321,7 @@ Yanfly.Icon = Yanfly.Icon || {};
 
 Yanfly.Param.SCCCostPadding = Number(Yanfly.Parameters['Cost Padding']);
 Yanfly.Param.SCCTextAlign = String(Yanfly.Parameters['Command Alignment']);
+Yanfly.Param.SCCWindowCol = Number(Yanfly.Parameters['Window Columns']);
 Yanfly.Param.SCCTpFormat = String(Yanfly.Parameters['TP Format']);
 Yanfly.Param.SCCTpFontSize = Number(Yanfly.Parameters['TP Font Size']);
 Yanfly.Param.SCCTpTextColor = Number(Yanfly.Parameters['TP Text Color']);
@@ -289,6 +366,14 @@ DataManager.processSkillNotetags = function(group) {
   var noteTpEval2 = /<\/(?:TP COST EVAL|custom tp cost)>/i;
   var noteHpEval1 = /<(?:HP COST EVAL|custom hp cost)>/i;
   var noteHpEval2 = /<\/(?:HP COST EVAL|custom hp cost)>/i;
+  var noteEvalReq1 = /<(?:EVAL REQUIREMENT|custom requirement)>/i;
+  var noteEvalReq2 = /<\/(?:EVAL REQUIREMENT|custom requirement)>/i;
+  var noteEvalExe1 = /<(?:EVAL EXECUTION|custom execution)>/i;
+  var noteEvalExe2 = /<\/(?:EVAL EXECUTION|custom execution)>/i;
+  var noteCostEval1 = /<(?:COST DISPLAY EVAL|display cost eval)>/i;
+  var noteCostEval2 = /<\/(?:COST DISPLAY EVAL|display cost eval)>/i;
+  var noteCostText1 = /<(?:CUSTOM COST DISPLAY|custom display cost)>/i;
+  var noteCostText2 = /<\/(?:CUSTOM COST DISPLAY|custom display cost)>/i;
   for (var n = 1; n < group.length; n++) {
 		var obj = group[n];
 		var notedata = obj.note.split(/[\r\n]+/);
@@ -301,6 +386,10 @@ DataManager.processSkillNotetags = function(group) {
     obj.hpCostEval = '';
     obj.mpCostEval = '';
     obj.tpCostEval = '';
+    obj.requireEval = '';
+    obj.executeEval = '';
+    obj.costdisplayEval = '';
+    obj.customCostText = '';
 
 		for (var i = 0; i < notedata.length; i++) {
 			var line = notedata[i];
@@ -328,12 +417,36 @@ DataManager.processSkillNotetags = function(group) {
         evalMode = 'hp';
       } else if (line.match(noteHpEval2)) {
         evalMode = 'none';
+      } else if (line.match(noteEvalReq1)) {
+        evalMode = 'custom requirement';
+      } else if (line.match(noteEvalReq2)) {
+        evalMode = 'none';
+      } else if (line.match(noteEvalExe1)) {
+        evalMode = 'custom execute';
+      } else if (line.match(noteEvalExe2)) {
+        evalMode = 'none';
+      } else if (line.match(noteCostEval1)) {
+        evalMode = 'display cost eval';
+      } else if (line.match(noteCostEval2)) {
+        evalMode = 'none';
+      } else if (line.match(noteCostText1)) {
+        evalMode = 'custom display cost';
+      } else if (line.match(noteCostText2)) {
+        evalMode = 'none';
       } else if (evalMode === 'mp') {
         obj.mpCostEval = obj.mpCostEval + line + '\n';
       } else if (evalMode === 'tp') {
         obj.tpCostEval = obj.tpCostEval + line + '\n';
       } else if (evalMode === 'hp') {
         obj.hpCostEval = obj.hpCostEval + line + '\n';
+      } else if (evalMode === 'custom requirement') {
+        obj.requireEval = obj.requireEval + line + '\n';
+      } else if (evalMode === 'custom execute') {
+        obj.executeEval = obj.executeEval + line + '\n';
+      } else if (evalMode === 'display cost eval') {
+        obj.costdisplayEval = obj.costdisplayEval + line + '\n';
+      } else if (evalMode === 'custom display cost') {
+        obj.customCostText = obj.customCostText + line;
       }
 		}
 	}
@@ -379,11 +492,11 @@ DataManager.processObjectNotetags = function(group) {
       } else if (customMode === 'before') {
         obj.customBeforeEval = obj.customBeforeEval + line + '\n';
       } else if (customMode === 'pre-damage') {
-        obj.customBeforeEval = obj.customPreDamageEval + line + '\n';
+        obj.customPreDamageEval = obj.customPreDamageEval + line + '\n';
       } else if (customMode === 'post-damage') {
-        obj.customBeforeEval = obj.customPostDamageEval + line + '\n';
+        obj.customPostDamageEval = obj.customPostDamageEval + line + '\n';
       } else if (customMode === 'after') {
-        obj.customBeforeEval = obj.customAfterEval + line + '\n';
+        obj.customAfterEval = obj.customAfterEval + line + '\n';
       }
 		}
 	}
@@ -449,6 +562,26 @@ DataManager.processGSCNotetags2 = function(group) {
 // Game_BattlerBase
 //=============================================================================
 
+Yanfly.Skill.Game_BattlerBase_mSC =
+    Game_BattlerBase.prototype.meetsSkillConditions;
+Game_BattlerBase.prototype.meetsSkillConditions = function(skill) {
+    if (!Yanfly.Skill.Game_BattlerBase_mSC.call(this, skill)) return false;
+    return this.meetsSkillConditionsEval(skill);
+};
+
+Game_BattlerBase.prototype.meetsSkillConditionsEval = function(skill) {
+    if (skill.requireEval === '') return true;
+    var value = true;
+    var item = skill;
+    var a = this;
+    var user = this;
+    var subject = this;
+    var s = $gameSwitches._data;
+    var v = $gameVariables._data;
+    eval(skill.requireEval);
+    return value;
+};
+
 Game_BattlerBase.prototype.skillHpCost = function(skill) {
 	var cost = skill.hpCost;
   var item = skill;
@@ -504,10 +637,22 @@ Yanfly.Skill.Game_BattlerBase_paySkillCost =
 Game_BattlerBase.prototype.paySkillCost = function(skill) {
     Yanfly.Skill.Game_BattlerBase_paySkillCost.call(this, skill);
 		this.paySkillHpCost(skill);
+    this.paySkillEvalCost(skill);
 };
 
 Game_BattlerBase.prototype.paySkillHpCost = function(skill) {
 		this._hp -= this.skillHpCost(skill);
+};
+
+Game_BattlerBase.prototype.paySkillEvalCost = function(skill) {
+		if (skill.executeEval === '') return;
+    var item = skill;
+    var a = this;
+    var user = this;
+    var subject = this;
+    var s = $gameSwitches._data;
+    var v = $gameVariables._data;
+    eval(skill.executeEval);
 };
 
 Game_BattlerBase.prototype.gauge1 = function() {
@@ -825,16 +970,22 @@ Window_SkillType.prototype.itemTextAlign = function() {
 // Window_SkillList
 //=============================================================================
 
+Window_SkillList.prototype.maxCols = function() {
+    return Yanfly.Param.SCCWindowCol;
+};
+
 Window_SkillList.prototype.drawSkillCost = function(skill, wx, wy, width) {
     var dw = width;
 		dw = this.drawTpCost(skill, wx, wy, dw);
 		dw = this.drawMpCost(skill, wx, wy, dw);
 		dw = this.drawHpCost(skill, wx, wy, dw);
+    dw = this.drawCustomDisplayCost(skill, wx, wy, dw);
 		dw = this.drawOtherCost(skill, wx, wy, dw);
+    return dw;
 };
 
 Window_SkillList.prototype.drawTpCost = function(skill, wx, wy, dw) {
-		if (this._actor.skillTpCost(skill) <= 0) { return dw;	}
+		if (this._actor.skillTpCost(skill) <= 0) return dw;
 		if (Yanfly.Icon.Tp > 0) {
 			var iw = wx + dw - Window_Base._iconWidth;
 			this.drawIcon(Yanfly.Icon.Tp, iw, wy + 2);
@@ -846,12 +997,13 @@ Window_SkillList.prototype.drawTpCost = function(skill, wx, wy, dw) {
 			TextManager.tpA);
 		this.contents.fontSize = Yanfly.Param.SCCTpFontSize;
 		this.drawText(text, wx, wy, dw, 'right');
+    var returnWidth = dw - this.textWidth(text) - Yanfly.Param.SCCCostPadding;
 		this.resetFontSettings();
-		return dw - this.textWidth(text) - Yanfly.Param.SCCCostPadding;
+		return returnWidth;
 };
 
 Window_SkillList.prototype.drawMpCost = function(skill, wx, wy, dw) {
-		if (this._actor.skillMpCost(skill) <= 0) { return dw;	}
+		if (this._actor.skillMpCost(skill) <= 0) return dw;
 		if (Yanfly.Icon.Mp > 0) {
 			var iw = wx + dw - Window_Base._iconWidth;
 			this.drawIcon(Yanfly.Icon.Mp, iw, wy + 2);
@@ -862,13 +1014,14 @@ Window_SkillList.prototype.drawMpCost = function(skill, wx, wy, dw) {
 		var text = fmt.format(Yanfly.Util.toGroup(this._actor.skillMpCost(skill)),
 			TextManager.mpA);
 		this.contents.fontSize = Yanfly.Param.SCCMpFontSize;
-		this.drawText(text, wx, wy, dw, 'right');
+    this.drawText(text, wx, wy, dw, 'right');
+    var returnWidth = dw - this.textWidth(text) - Yanfly.Param.SCCCostPadding;
 		this.resetFontSettings();
-		return dw - this.textWidth(text) - Yanfly.Param.SCCCostPadding;
+		return returnWidth;
 };
 
 Window_SkillList.prototype.drawHpCost = function(skill, wx, wy, dw) {
-		if (this._actor.skillHpCost(skill) <= 0) { return dw;	}
+		if (this._actor.skillHpCost(skill) <= 0) return dw;
 		if (Yanfly.Icon.Hp > 0) {
 			var iw = wx + dw - Window_Base._iconWidth;
 			this.drawIcon(Yanfly.Icon.Hp, iw, wy + 2);
@@ -879,9 +1032,35 @@ Window_SkillList.prototype.drawHpCost = function(skill, wx, wy, dw) {
 		var text = fmt.format(Yanfly.Util.toGroup(this._actor.skillHpCost(skill)),
 			TextManager.hpA);
 		this.contents.fontSize = Yanfly.Param.SCCHpFontSize;
-		this.drawText(text, wx, wy, dw, 'right');
+    this.drawText(text, wx, wy, dw, 'right');
+    var returnWidth = dw - this.textWidth(text) - Yanfly.Param.SCCCostPadding;
 		this.resetFontSettings();
-		return dw - this.textWidth(text) - Yanfly.Param.SCCCostPadding;
+		return returnWidth;
+};
+
+Window_SkillList.prototype.textWidthEx = function(text) {
+    return this.drawTextEx(text, 0, this.contents.height);
+};
+
+Window_SkillList.prototype.drawCustomDisplayCost = function(skill, wx, wy, dw) {
+    this.runDisplayEvalCost(skill);
+    if (skill.customCostText === '') return dw;
+    var width = this.textWidthEx(skill.customCostText);
+    this.drawTextEx(skill.customCostText, wx - width + dw, wy);
+    var returnWidth = dw - width - Yanfly.Param.SCCCostPadding;
+		this.resetFontSettings();
+		return returnWidth;
+};
+
+Window_SkillList.prototype.runDisplayEvalCost = function(skill) {
+    if (skill.costdisplayEval === '') return;
+    var item = skill;
+    var a = this._actor;
+    var user = this._actor;
+    var subject = this._actor;
+    var s = $gameSwitches._data;
+    var v = $gameVariables._data;
+    eval(skill.costdisplayEval);
 };
 
 Window_SkillList.prototype.drawOtherCost = function(skill, wx, wy, dw) {

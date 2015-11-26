@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Region Events
 // YEP_RegionEvents.js
-// Version: 1.00
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,8 +11,8 @@ Yanfly.RCE = Yanfly.RCE || {};
 
 //=============================================================================
  /*:
- * @plugindesc Make it so that whenever players step on certain Region
- * ID's, the game will play certain common events.
+ * @plugindesc v1.01a Make it so that whenever players step on certain
+ * Region ID's, the game will play certain common events.
  * @author Yanfly Engine Plugins
  *
  * @param Region 1
@@ -562,732 +561,732 @@ Yanfly.RCE = Yanfly.RCE || {};
  * @default 0
  *
  * @param Region 110
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 111
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 112
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 113
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 114
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 115
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 116
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 117
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 118
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 119
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 120
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 121
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 122
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 123
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 124
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 125
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 126
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 127
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 128
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 129
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 130
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 131
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 132
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 133
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 134
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 135
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 136
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 137
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 138
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 139
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 140
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 141
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 142
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 143
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 144
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 145
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 146
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 147
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 148
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 149
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 150
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 151
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 152
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 153
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 154
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 155
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 156
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 157
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 158
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 159
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 160
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 161
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 162
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 163
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 164
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 165
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 166
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 167
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 168
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 169
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 170
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 171
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 172
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 173
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 174
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 175
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 176
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 177
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 178
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 179
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 180
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 181
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 182
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 183
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 184
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 185
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 186
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 187
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 188
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 189
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 190
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 191
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 192
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 193
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 194
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 195
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 196
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 197
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 198
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 199
- * @desc What common event to play for this Region 1when stepped upon.
- * Use 0 to have that Region 1not trigger a common event.
+ * @desc What common event to play for this Region when stepped upon.
+ * Use 0 to have that region not trigger a common event.
  * @default 0
  *
  * @param Region 200
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 201
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 202
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 203
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 204
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 205
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 206
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 207
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 208
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 209
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 210
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 211
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 212
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 213
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 214
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 215
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 216
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 217
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 218
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 219
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 220
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 221
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 222
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 223
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 224
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 225
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 226
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 227
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 228
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 229
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 230
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 231
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 232
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 233
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 234
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 235
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 236
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 237
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 238
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 239
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 240
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 241
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 242
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 243
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 244
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 245
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 246
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 247
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 248
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 249
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 250
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 251
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 252
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 253
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 254
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
  * @param Region 255
- * @desc What common event to play for this Region 2when stepped upon.
+ * @desc What common event to play for this Region when stepped upon.
  * Use 0 to have that Region not trigger a common event.
  * @default 0
  *
@@ -1317,6 +1316,17 @@ Yanfly.RCE = Yanfly.RCE || {};
  *   If the player steps onto a tile marked by Region x, it will run the
  *   common event y. This will override the default settings marked in the
  *   editor specifically for that map.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.01a:
+ * - Fixed a bug with region event notetags that stopped working if it was used
+ * to teleport onto the same map.
+ *
+ * Version 1.00:
+ * - Finished plugin!
  */
 //=============================================================================
 
@@ -1365,6 +1375,9 @@ Game_Map.prototype.isRegionEvent = function(mx, my) {
 };
 
 Game_Map.prototype.getUniqueRegionCommonEvent = function(regionId) {
+    if ($dataMap.regionCommonEvents === undefined) {
+      DataManager.processRECNotetags();
+    }
     if ($dataMap.regionCommonEvents && $dataMap.regionCommonEvents[regionId]) {
       return $dataMap.regionCommonEvents[regionId];
     }

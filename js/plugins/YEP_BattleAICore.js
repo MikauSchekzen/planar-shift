@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Battle Artificial Intelligence Core
 // YEP_BattleAICore.js
-// Version: 1.00
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,7 +11,7 @@ Yanfly.CoreAI = Yanfly.CoreAI || {};
 
 //=============================================================================
  /*:
- * @plugindesc This plugin allows you to structure battle A.I.
+ * @plugindesc v1.00 This plugin allows you to structure battle A.I.
  * patterns with more control.
  * @author Yanfly Engine Plugins
  *
@@ -213,7 +212,7 @@ Yanfly.CoreAI = Yanfly.CoreAI || {};
  *- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  * Replace 'type' with either 'highest', 'lowest', or 'average' to get the
  * respective party level for the skill's scope. This will reference the entire
- * party's level. If this condition is fulfilled, all targets would will become
+ * party's level. If this condition is fulfilled, all targets would become
  * valid targets.
  *- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  * Example:   Highest Party Level > 10: Skill 10, Lowest MP%

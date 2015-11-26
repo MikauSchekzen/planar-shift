@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Item Core
 // YEP_ItemCore.js
-// Version: 1.02
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,7 +11,7 @@ Yanfly.Item = Yanfly.Item || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.02 Changes the way Items are handled for your game
+ * @plugindesc v1.10 Changes the way Items are handled for your game
  * and the Item Scene, too.
  * @author Yanfly Engine Plugins
  *
@@ -65,6 +64,11 @@ Yanfly.Item = Yanfly.Item || {};
  * @param Updated Scene Item
  * @desc Enabling this will change Scene Item's visual appearance.
  * NO - false     YES - true (recommended)
+ * @default true
+ *
+ * @param List Equipped Items
+ * @desc Show equipped independent items in the item lists?
+ * NO - false     YES - true
  * @default true
  *
  * @param Show Icon
@@ -248,8 +252,70 @@ Yanfly.Item = Yanfly.Item || {};
  * name is 'Legendary Blade', then 'Legendary Blade' will take priority.
  *
  * ============================================================================
+ * Lunatic Mode - Custom Info Window Display
+ * ============================================================================
+ *
+ * If you want to display unique and custom stuff into your info window on the
+ * side, you can use the following notetags:
+ *
+ *   <Info Text Top>
+ *    text
+ *    text
+ *   </Info Text Top>
+ *   Type in extra information you wish to type in for the item info window
+ *   here, whether it is lore or other information. Text codes can be used.
+ *   Information here is is displayed towards the top of the info window.
+ *
+ *   <Info Text Bottom>
+ *    text
+ *    text
+ *   </Info Text Bottom>
+ *   Type in extra information you wish to type in for the item info window
+ *   here, whether it is lore or other information. Text codes can be used.
+ *   Information here is is displayed towards the bottom of the info window.
+ *
+ *   <Info Eval>
+ *    var variableId = 1;
+ *    var value = 500;
+ *    $gameVariables.setValue(variableId, value);
+ *   </Info Eval>
+ *   If you know JavaScript, you can use these notetags to run some code before
+ *   displaying any new info. This way, if you plan on using text codes that
+ *   display variable values, you can run a bit of code before displaying them
+ *   to synch up what's shown in the item info window.
+ *
+ * ============================================================================
  * Changelog
  * ============================================================================
+ *
+ * Version 1.10:
+ * - Added Lunatic Mode - Custom Info Window Display.
+ *
+ * Version 1.09:
+ * - Fixed a bug with evented item removal that didn't remove equipped items if
+ * the 'Include Equipment' checkbox was checked.
+ *
+ * Version 1.08:
+ * - Fixed a bug with the Control Variable event that would not gather the
+ * right amount of independent items.
+ *
+ * Version 1.07:
+ * - Fixed a bug with the Change Equipment event where armors wouldn't equip.
+ *
+ * Version 1.06:
+ * - Fixed a bug and rewrote the initializing equipment process.
+ *
+ * Version 1.05:
+ * - Compatibility update with ItemBook.
+ *
+ * Version 1.04:
+ * - Added 'List Equipped Items' parameter to allow for equipment restricted
+ * actors to be able to alt their equipment.
+ *
+ * Version 1.03:
+ * - Fixed a bug where using events to remove independent items weren't working
+ * properly and instead added more items.
+ * - Fixed a bug where a Random Variance of 0 still gave random stats.
  *
  * Version 1.02:
  * - Fixed a bug where initializing equipment slots didn't work properly and/or
@@ -280,6 +346,7 @@ Yanfly.Param.ItemNameFmt = String(Yanfly.Parameters['Name Format']);
 Yanfly.Param.ItemNameSpacing = String(Yanfly.Parameters['Name Spacing']);
 Yanfly.Param.ItemBoostFmt = String(Yanfly.Parameters['Boost Format']);
 Yanfly.Param.ItemSceneItem = String(Yanfly.Parameters['Updated Scene Item']);
+Yanfly.Param.ItemShEquipped = String(Yanfly.Parameters['List Equipped Items']);
 Yanfly.Param.ItemShowIcon = String(Yanfly.Parameters['Show Icon']);
 Yanfly.Param.ItemIconSize = Number(Yanfly.Parameters['Icon Size']);
 Yanfly.Param.ItemFontSize = Number(Yanfly.Parameters['Font Size']);
@@ -308,16 +375,20 @@ DataManager.isDatabaseLoaded = function() {
 };
 
 DataManager.processItemCoreNotetags = function(group) {
- var note1 = /<(?:RANDOM VARIANCE):[ ](\d+)>/i;
+  var note1 = /<(?:RANDOM VARIANCE):[ ](\d+)>/i;
   var note2 = /<(?:NONINDEPENDENT ITEM|not independent item)>/i;
   var note3 = /<(?:PRIORITY NAME)>/i;
- for (var n = 1; n < group.length; n++) {
-   var obj = group[n];
-   var notedata = obj.note.split(/[\r\n]+/);
+  for (var n = 1; n < group.length; n++) {
+    var obj = group[n];
+    var notedata = obj.note.split(/[\r\n]+/);
 
     obj.randomVariance = Yanfly.Param.ItemRandomVariance;
     obj.nonIndepdent = false;
     obj.setPriorityName = false;
+    obj.infoEval = '';
+    obj.infoTextTop = '';
+    obj.infoTextBottom = '';
+    var evalMode = 'none';
 
    for (var i = 0; i < notedata.length; i++) {
      var line = notedata[i];
@@ -327,9 +398,29 @@ DataManager.processItemCoreNotetags = function(group) {
         obj.nonIndepdent = true;
       } else if (line.match(note3)) {
         obj.setPriorityName = true;
+      } else if (line.match(/<(?:INFO EVAL)>/i)) {
+        evalMode = 'info eval';
+      } else if (line.match(/<\/(?:INFO EVAL)>/i)) {
+        evalMode = 'none';
+      } else if (line.match(/<(?:INFO TEXT TOP)>/i)) {
+        evalMode = 'info text top';
+      } else if (line.match(/<\/(?:INFO TEXT TOP)>/i)) {
+        evalMode = 'none';
+      } else if (line.match(/<(?:INFO TEXT BOTTOM)>/i)) {
+        evalMode = 'info text bottom';
+      } else if (line.match(/<\/(?:INFO TEXT BOTTOM)>/i)) {
+        evalMode = 'none';
+      } else if (evalMode === 'info eval') {
+        obj.infoEval = obj.infoEval + line + '\n';
+      } else if (evalMode === 'info text top') {
+        if (obj.infoTextTop !== '') obj.infoTextTop += '\n';
+        obj.infoTextTop = obj.infoTextTop + line;
+      } else if (evalMode === 'info text bottom') {
+        if (obj.infoTextBottom !== '') obj.infoTextBottom += '\n';
+        obj.infoTextBottom = obj.infoTextBottom + line;
       }
-   }
- }
+    }
+  }
 };
 
 DataManager.setDatabaseLengths = function() {
@@ -528,6 +619,7 @@ ItemManager.randomizeInitialItem = function(baseItem, newItem) {
 };
 
 ItemManager.randomizeInitialEffects = function(baseItem, newItem) {
+    if (baseItem.randomVariance <= 0) return;
     var randomValue = (baseItem.randomVariance + 1) * 2;
     var offset = baseItem.randomVariance;
     newItem.effects.forEach(function(effect) {
@@ -557,6 +649,7 @@ ItemManager.randomizeInitialEffects = function(baseItem, newItem) {
 };
 
 ItemManager.randomizeInitialStats = function(baseItem, newItem) {
+    if (baseItem.randomVariance <= 0) return;
     var randomValue = (baseItem.randomVariance + 1) * 2;
     var offset = baseItem.randomVariance;
     for (var i = 0; i < 8; ++i) {
@@ -635,40 +728,67 @@ Game_Temp.prototype.varianceStock = function() {
 //=============================================================================
 
 Game_Actor.prototype.initIndependentEquips = function(equips) {
-    var slots = this.equipSlots();
-    var maxSlots = slots.length;
-    this._equips = [];
-    for (var i = 0; i < maxSlots; i++) {
-      this._equips[i] = new Game_Item();
-    }
-    for (var j = 0; j < equips.length; j++) {
-      if (j < maxSlots) {
-        var itemId = equips[j];
-        if (itemId === 0) {
-          this.changeEquip(j, null);
-          continue;
-        }
-        if (slots[j] === 1) {
-          var item = $dataWeapons[itemId];
-        } else {
-          var item = $dataArmors[itemId];
-        }
-        if (DataManager.isIndependent(item)) {
-          if (this.canEquip(item)) {
-            var array = $gameParty.gainItem(item, 1);
-            if (array instanceof Array) {
-              newItem = array[0];
-              this.changeEquip(j, newItem);
-            }
-          }
-        } else {
-          this._equips[j].setEquip(slots[j] === 1, itemId);
-        }
-      }
-    }
+    var equips = this.convertInitEquips(equips);
+    this.equipInitIndependentEquips(equips);
     this.releaseUnequippableItems(true);
     this.recoverAll();
     this.refresh();
+};
+
+Game_Actor.prototype.convertInitEquips = function(equips) {
+    var items = [];
+    for (var i = 0; i < equips.length; ++i) {
+      var equipId = equips[i];
+      if (equipId <= 0) continue;
+      var equipType = $dataSystem.equipTypes[i + 1];
+      if (equipType === $dataSystem.equipTypes[1] ||
+      (i === 1 && this.isDualWield())) {
+        var equip = $dataWeapons[equipId];
+      } else {
+        var equip = $dataArmors[equipId];
+      }
+      items.push(equip);
+    }
+    return items;
+};
+
+Game_Actor.prototype.equipInitIndependentEquips = function(equips) {
+    var slots = this.equipSlots();
+    var maxSlots = slots.length;
+    this._equips = [];
+    for (var i = 0; i < maxSlots; ++i) {
+      this._equips[i] = new Game_Item();
+    }
+    for (var i = 0; i < maxSlots; ++i) {
+      var slotType = slots[i];
+      var equip = this.grabInitEquips(equips, slotType);
+      if (DataManager.isIndependent(equip) && this.canEquip(equip)) {
+        var array = $gameParty.gainIndependentItem(equip, 1)
+        if (array instanceof Array) {
+          newItem = array[0];
+          this.changeEquip(i, newItem);
+        }
+      } else if (this.canEquip(equip)) {
+        this._equips[i].setObject(equip);
+      }
+    }
+};
+
+Game_Actor.prototype.grabInitEquips = function(equips, slotType) {
+    var item = null;
+    for (var i = 0; i < equips.length; ++i) {
+      var equip = equips[i];
+      if (!equip) continue;
+      if (slotType === 1 && DataManager.isWeapon(equip)) {
+        item = equip;
+        break;
+      } else if (equip.etypeId === slotType) {
+        item = equip;
+        break;
+      }
+    }
+    if (item) equips[i] = null;
+    return item;
 };
 
 Yanfly.Item.Game_Actor_hasWeapon = Game_Actor.prototype.hasWeapon;
@@ -706,7 +826,7 @@ Game_Actor.prototype.changeEquipById = function(etypeId, itemId) {
       if (this.equipSlots()[slotId] === 1) {
         var baseItem = $dataWeapons[itemId];
       } else {
-        var baseItem = $dataWeapons[itemId];
+        var baseItem = $dataArmors[itemId];
       }
       if (DataManager.isIndependent(baseItem)) {
         if (this.hasBaseItem(baseItem)) return;
@@ -722,6 +842,15 @@ Game_Actor.prototype.changeEquipById = function(etypeId, itemId) {
       }
     }
     Yanfly.Item.Game_Actor_changeEquipById.call(this, etypeId, itemId)
+};
+
+Game_Actor.prototype.unequipItem = function(item) {
+    for (var i = 0; i < this.equips().length; ++i) {
+      var equip = this.equips()[0];
+      if (!equip) continue;
+      if (equip !== item) continue;
+      this.changeEquip(i, null);
+    }
 };
 
 //=============================================================================
@@ -750,7 +879,7 @@ Game_Party.prototype.initActorEquips = function() {
 Yanfly.Item.Game_Party_gainItem = Game_Party.prototype.gainItem;
 Game_Party.prototype.gainItem = function(item, amount, includeEquip) {
     if (DataManager.isIndependent(item)) {
-      return this.gainIndependentItem(item, amount, includeEquip);
+      this.gainIndependentItem(item, amount, includeEquip);
     } else {
       Yanfly.Item.Game_Party_gainItem.call(this, item, amount, includeEquip);
     }
@@ -768,7 +897,10 @@ Game_Party.prototype.gainIndependentItem = function(item, amount, includeEquip) 
       amount = Math.abs(amount);
       for (var i = 0; i < amount; ++i) {
         if (item.baseItemId) {
-          this.removeIndependentItem(item);
+          this.removeIndependentItem(item, includeEquip);
+        } else if (DataManager.isIndependent(item)) {
+          var target = $gameParty.getMatchingBaseItem(item, includeEquip);
+          if (target !== null) this.removeIndependentItem(target, includeEquip);
         } else {
           this.removeBaseItem(item, includeEquip);
         }
@@ -799,10 +931,19 @@ Game_Party.prototype.registerNewItem = function(baseItem, newItem) {
     }
 };
 
-Game_Party.prototype.removeIndependentItem = function(item) {
+Game_Party.prototype.removeIndependentItem = function(item, includeEquip) {
+    if (includeEquip && this.checkItemIsEquipped(item)) {
+      for (var i = 1; i < $gameActors._data.length; ++i) {
+        var actor = $gameActors.actor(i);
+        if (!actor) continue;
+        if (!actor.equips().contains(item)) continue;
+        actor.unequipItem(item);
+      }
+    }
     var container = this.itemContainer(item);
     container[item.id] = 0;
     if (container[item.id] <= 0) delete container[item.id];
+
 };
 
 Game_Party.prototype.removeBaseItem = function(item, includeEquip) {
@@ -817,14 +958,19 @@ Game_Party.prototype.getMatchingBaseItem = function(baseItem, equipped) {
     if (DataManager.isItem(baseItem)) var group = this.items();
     if (DataManager.isWeapon(baseItem)) var group = this.weapons();
     if (DataManager.isArmor(baseItem)) var group = this.armors();
+    if (equipped) {
+      for (var a = 0; a < this.members().length; ++a) {
+        var actor = this.members()[a];
+        if (!actor) continue;
+        group = group.concat(actor.equips());
+      }
+    }
     var baseItemId = baseItem.id;
     for (var i = 0; i < group.length; ++i) {
       var item = group[i];
       if (!item) continue;
       if (!item.baseItemId) continue;
       if (item.baseItemId !== baseItemId) continue;
-      if (equipped) return item;
-      if (this.checkItemIsEquipped(item)) continue;
       return item;
     }
     return null;
@@ -896,6 +1042,21 @@ Game_Party.prototype.isAnyMemberEquipped = function(item) {
     return Yanfly.Item.Game_Party_isAnyMemberEquipped.call(this, item);
 };
 
+Game_Party.prototype.numIndependentItems = function(baseItem) {
+    var value = 0;
+    if (!DataManager.isIndependent(baseItem)) return this.numItems(baseItem);
+    var id = baseItem.id;
+    if (DataManager.isItem(baseItem)) var group = this.items();
+    if (DataManager.isWeapon(baseItem)) var group = this.weapons();
+    if (DataManager.isArmor(baseItem)) var group = this.armors();
+    for (var i = 0; i < group.length; ++i) {
+      var item = group[i];
+      if (!item) continue;
+      if (item.baseItemId && item.baseItemId === id) value += 1;
+    }
+    return value;
+};
+
 //=============================================================================
 // Game_Interpreter
 //=============================================================================
@@ -908,9 +1069,50 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
     if (command === 'DisableVarianceStock') $gameTemp.disableVarianceStock();
 };
 
+Yanfly.Item.Game_Interpreter_gDO = Game_Interpreter.prototype.gameDataOperand;
+Game_Interpreter.prototype.gameDataOperand = function(type, param1, param2) {
+  switch (type) {
+  case 0:
+    return $gameParty.numIndependentItems($dataItems[param1]);
+    break;
+  case 1:
+    return $gameParty.numIndependentItems($dataWeapons[param1]);
+    break;
+  case 2:
+    return $gameParty.numIndependentItems($dataArmors[param1]);
+    break;
+  default:
+    return Yanfly.Item.Game_Interpreter_gDO.call(this, type, param1, param2);
+    break;
+  }
+};
+
 //=============================================================================
 // Window_ItemList
 //=============================================================================
+
+Yanfly.Item.Window_ItemList_makeItemList =
+    Window_ItemList.prototype.makeItemList;
+Window_ItemList.prototype.makeItemList = function() {
+    Yanfly.Item.Window_ItemList_makeItemList.call(this);
+    if (SceneManager._scene instanceof Scene_Item) this.listEquippedItems();
+};
+
+Window_ItemList.prototype.listEquippedItems = function() {
+    if (!eval(Yanfly.Param.ItemShEquipped)) return;
+    var results = [];
+    for (var a = 0; a < $gameParty.members().length; ++a) {
+      var actor = $gameParty.members()[a];
+      if (!actor) continue;
+      for (var i = 0; i < actor.equips().length; ++i) {
+        var equip = actor.equips()[i];
+        if (!equip) continue;
+        if (!equip.baseItemId) continue;
+        if (this.includes(equip)) results.push(equip);
+      }
+    }
+    this._data = results.concat(this._data);
+};
 
 Yanfly.Item.Window_ItemList_drawItemNumber =
     Window_ItemList.prototype.drawItemNumber;
@@ -930,10 +1132,11 @@ Window_ItemList.prototype.drawItemCarryNumber = function(item, dx, dy, dw) {
     } else if (DataManager.isArmor(item)) {
       var index = $gameParty.armors().indexOf(item);
     }
+    if (index < 0) return this.drawEquippedActor(item, dx, dy, dw);
     index += 1;
     var max = $gameParty.getIndependentItemTypeMax(item);
     var fmt = Yanfly.Param.ItemCarryFmt;
-    var text = fmt.format(index, max);
+    var text = fmt.format(Yanfly.Util.toGroup(index), Yanfly.Util.toGroup(max));
     if (Yanfly.Param.ItemQuantitySize) {
       this.contents.fontSize = Yanfly.Param.ItemQuantitySize;
     }
@@ -944,6 +1147,21 @@ Window_ItemList.prototype.drawItemCarryNumber = function(item, dx, dy, dw) {
     } else {
       this.changeTextColor(this.normalColor());
     }
+    this.drawText(text, dx, dy, dw, 'right');
+    this.resetFontSettings();
+};
+
+Window_ItemList.prototype.drawEquippedActor = function(item, dx, dy, dw) {
+    var carrier = null;
+    for (var a = 0; a < $gameParty.members().length; ++a) {
+      var actor = $gameParty.members()[a];
+      if (!actor) continue;
+      if (actor.equips().contains(item)) carrier = actor;
+    };
+    if (Yanfly.Param.ItemQuantitySize) {
+      this.contents.fontSize = Yanfly.Param.ItemQuantitySize;
+    }
+    var text = carrier.name();
     this.drawText(text, dx, dy, dw, 'right');
     this.resetFontSettings();
 };
@@ -1364,6 +1582,7 @@ Window_ItemInfo.prototype.refresh = function() {
     this.contents.clear();
     var dy = 0;
     if (!this._item) return dy;
+    this.preInfoEval();
     dy = this.drawPreItemInfo(dy);
     dy = this.drawItemInfo(dy);
     dy = this.drawItemInfoA(dy);
@@ -1372,6 +1591,19 @@ Window_ItemInfo.prototype.refresh = function() {
     dy = this.drawItemInfoD(dy);
     dy = this.drawItemInfoE(dy);
     return this.drawItemInfoF(dy);
+};
+
+Window_ItemInfo.prototype.preInfoEval = function() {
+    var item = this._item;
+    if (item.infoEval === undefined) {
+      item.infoEval = DataManager.getBaseItem(item).infoEval;
+    }
+    if (item.infoEval === '') return;
+    var weapon = this._item;
+    var armor = this._item;
+    var s = $gameSwitches._data;
+    var v = $gameVariables._data;
+    eval(item.infoEval);
 };
 
 Window_ItemInfo.prototype.drawPreItemInfo = function(dy) {
@@ -1387,6 +1619,7 @@ Window_ItemInfo.prototype.drawItemInfo = function(dy) {
 };
 
 Window_ItemInfo.prototype.drawItemInfoA = function(dy) {
+    dy = this.drawInfoTextTop(dy);
     return dy;
 };
 
@@ -1407,6 +1640,7 @@ Window_ItemInfo.prototype.drawItemInfoE = function(dy) {
 };
 
 Window_ItemInfo.prototype.drawItemInfoF = function(dy) {
+    dy = this.drawInfoTextBottom(dy);
     return dy;
 };
 
@@ -1415,6 +1649,36 @@ Window_ItemInfo.prototype.drawDarkRect = function(dx, dy, dw, dh) {
     this.changePaintOpacity(false);
     this.contents.fillRect(dx + 1, dy + 1, dw - 2, dh - 2, color);
     this.changePaintOpacity(true);
+};
+
+Window_ItemInfo.prototype.drawInfoTextTop = function(dy) {
+    var item = this._item;
+    if (item.infoTextTop === undefined) {
+      item.infoTextTop = DataManager.getBaseItem(item).infoTextTop;
+    }
+    if (item.infoTextTop === '') return dy;
+    var info = item.infoTextTop.split(/[\r\n]+/);
+    for (var i = 0; i < info.length; ++i) {
+      var line = info[i];
+      this.drawTextEx(line, this.textPadding(), dy)
+      dy += this.lineHeight();
+    }
+    return dy;
+};
+
+Window_ItemInfo.prototype.drawInfoTextBottom = function(dy) {
+    var item = this._item;
+    if (item.infoTextBottom === undefined) {
+      item.infoTextBottom = DataManager.getBaseItem(item).infoTextBottom;
+    }
+    if (item.infoTextBottom === '') return dy;
+    var info = item.infoTextBottom.split(/[\r\n]+/);
+    for (var i = 0; i < info.length; ++i) {
+      var line = info[i];
+      this.drawTextEx(line, this.textPadding(), dy)
+      dy += this.lineHeight();
+    }
+    return dy;
 };
 
 //=============================================================================

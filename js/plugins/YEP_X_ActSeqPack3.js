@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Battle Engine Extension - Action Sequence Pack 3
 // YEP_X_ActSeqPack3.js
-// Version: 1.00
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,8 +11,8 @@ Yanfly.ASP3 = Yanfly.ASP3 || {};
 
 //=============================================================================
  /*:
- * @plugindesc (Requires YEP_BattleEngineCore.js) Camera control is added
- * to the Battle Engine Core's action sequences.
+ * @plugindesc v1.01 (Requires YEP_BattleEngineCore.js) Camera control is
+ * added to the Battle Engine Core's action sequences.
  * @author Yanfly Engine Plugins
  *
  * @param Camera Option
@@ -118,6 +117,7 @@ Yanfly.ASP3 = Yanfly.ASP3 || {};
  *   dead actors: This will select only dead actors.
  *   actors not user; This will select all living actors except for the user.
  *   actor x; This will select the actor in slot x.
+ *   character x; This will select the specific character with actor ID x.
  *   enemies, existing enemies; This will select all living enemies.
  *   all enemies; This will select all enemies, even dead.
  *   dead enemies: This will select only dead enemies.
@@ -308,6 +308,16 @@ Yanfly.ASP3 = Yanfly.ASP3 || {};
  * Usage Example: zoom: 200%
  *                zoom: 1.5, 45
  *=============================================================================
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.01:
+ * - Updated help file to include Character X for target typing.
+ *
+ * Version 1.00:
+ * - Finished plugin!
  */
 //=============================================================================
 

@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Equip Core
 // YEP_EquipCore.js
-// Version: 1.02
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,7 +11,7 @@ Yanfly.Equip = Yanfly.Equip || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.02 Allows for the equipment system to be more flexible to
+ * @plugindesc v1.04a Allows for the equipment system to be more flexible to
  * allow for unique equipment slots per class.
  * @author Yanfly Engine Plugins
  *
@@ -154,10 +153,15 @@ Yanfly.Equip = Yanfly.Equip || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.04a:
+ * - Fixed a bug and rewrote the initializing equipment process.
+ *
+ * Version 1.03:
+ * - Fixed an bug that resulted in null object errors.
+ *
  * Version 1.02:
  * - Fixed an issue that did not keep HP and MP rates the same when using the
  * optimize and clear commands.
- * - Fixed an issue that resulted in null object errors.
  *
  * Version 1.01:
  * - Fixed a bug that did not update the stats properly when compared.
@@ -314,7 +318,15 @@ DataManager.processEquipNotetags2 = function(group) {
 //=============================================================================
 
 Game_Actor.prototype.initEquips = function(equips) {
-    var array = [];
+    var equips = this.convertInitEquips(equips);
+    this.equipInitEquips(equips);
+    this.releaseUnequippableItems(true);
+    this.recoverAll();
+    this.refresh();
+};
+
+Game_Actor.prototype.convertInitEquips = function(equips) {
+    var items = [];
     for (var i = 0; i < equips.length; ++i) {
       var equipId = equips[i];
       if (equipId <= 0) continue;
@@ -325,26 +337,40 @@ Game_Actor.prototype.initEquips = function(equips) {
       } else {
         var equip = $dataArmors[equipId];
       }
-      array.push(equip);
+      items.push(equip);
     }
+    return items;
+};
+
+Game_Actor.prototype.equipInitEquips = function(equips) {
     var slots = this.equipSlots();
     var maxSlots = slots.length;
     this._equips = [];
     for (var i = 0; i < maxSlots; ++i) {
       this._equips[i] = new Game_Item();
     }
-    for (var i = 0; i < array.length; ++i) {
-      var equip = array[i];
-      if (!equip) continue;
-      var etypeId = equip.etypeId;
-      if (!slots.contains(etypeId)) continue;
-      var slotId = slots.indexOf(etypeId);
-      if (this._equips[slotId].isWeapon() && this.isDualWield()) slotId += 1;
-      this._equips[slotId].setObject(equip);
+    for (var i = 0; i < maxSlots; ++i) {
+      var slotType = slots[i];
+      var equip = this.grabInitEquips(equips, slotType);
+      if (this.canEquip(equip)) this._equips[i].setObject(equip);
     }
-    this.releaseUnequippableItems(true);
-    this.recoverAll();
-    this.refresh();
+};
+
+Game_Actor.prototype.grabInitEquips = function(equips, slotType) {
+    var item = null;
+    for (var i = 0; i < equips.length; ++i) {
+      var equip = equips[i];
+      if (!equip) continue;
+      if (slotType === 1 && DataManager.isWeapon(equip)) {
+        item = equip;
+        break;
+      } else if (equip.etypeId === slotType) {
+        item = equip;
+        break;
+      }
+    }
+    if (item) equips[i] = null;
+    return item;
 };
 
 Game_Actor.prototype.equipSlots = function() {
@@ -372,7 +398,10 @@ Game_Actor.prototype.changeEquip = function(slotId, item) {
 Yanfly.Equip.Game_Actor_forceChangeEquip =
     Game_Actor.prototype.forceChangeEquip;
 Game_Actor.prototype.forceChangeEquip = function(slotId, item) {
-    if (!this._equips[slotId]) this._equips[slotId] = new Game_Item();
+    if (!this._equips[slotId]) {
+      this._equips[slotId] = new Game_Item();
+      this._equips[slotId].setEquip(this.equipSlots()[slotId] === 1, 0);
+    }
     Yanfly.Equip.Game_Actor_forceChangeEquip.call(this, slotId, item);
 };
 
@@ -817,8 +846,8 @@ Yanfly.Equip.Scene_Equip_commandOptimize =
     Scene_Equip.prototype.commandOptimize;
 Scene_Equip.prototype.commandOptimize = function() {
     $gameTemp._optimizeEquipments = true;
-    var hpRate = this.actor().hp / this.actor().mhp;
-    var mpRate = this.actor().mp / this.actor().mmp;
+    var hpRate = this.actor().hp / Math.max(1, this.actor().mhp);
+    var mpRate = this.actor().mp / Math.max(1, this.actor().mmp);
     Yanfly.Equip.Scene_Equip_commandOptimize.call(this);
     $gameTemp._optimizeEquipments = false;
     this.actor().setHp(parseInt(this.actor().mhp * hpRate));
@@ -830,8 +859,8 @@ Scene_Equip.prototype.commandOptimize = function() {
 Yanfly.Equip.Scene_Equip_commandClear = Scene_Equip.prototype.commandClear;
 Scene_Equip.prototype.commandClear = function() {
     $gameTemp._clearEquipments = true;
-    var hpRate = this.actor().hp / this.actor().mhp;
-    var mpRate = this.actor().mp / this.actor().mmp;
+    var hpRate = this.actor().hp / Math.max(1, this.actor().mhp);
+    var mpRate = this.actor().mp / Math.max(1, this.actor().mmp);
     Yanfly.Equip.Scene_Equip_commandClear.call(this);
     $gameTemp._clearEquipments = false;
     this.actor().setHp(parseInt(this.actor().mhp * hpRate));
@@ -850,8 +879,8 @@ Scene_Equip.prototype.onSlotOk = function() {
 
 Yanfly.Equip.Scene_Equip_onItemOk = Scene_Equip.prototype.onItemOk;
 Scene_Equip.prototype.onItemOk = function() {
-    var hpRate = this.actor().hp / this.actor().mhp;
-    var mpRate = this.actor().mp / this.actor().mmp;
+    var hpRate = this.actor().hp / Math.max(1, this.actor().mhp);
+    var mpRate = this.actor().mp / Math.max(1, this.actor().mmp);
     Yanfly.Equip.Scene_Equip_onItemOk.call(this);
     this.actor().setHp(parseInt(this.actor().mhp * hpRate));
 		this.actor().setMp(parseInt(this.actor().mmp * mpRate));

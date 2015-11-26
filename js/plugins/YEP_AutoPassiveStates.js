@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Auto Passive States
 // YEP_AutoPassiveStates.js
-// Version: 1.00
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,7 +11,7 @@ Yanfly.APS = Yanfly.APS || {};
 
 //=============================================================================
  /*:
- * @plugindesc This pluging allows for some states to function as
+ * @plugindesc v1.02 This plugin allows for some states to function as
  * passives for actors, enemies, skills, and equips.
  * @author Yanfly Engine Plugins
  *
@@ -40,6 +39,19 @@ Yanfly.APS = Yanfly.APS || {};
  *   This will add the states x through y (in a sequence) for the actor or
  *   enemy to have as a passive state. If placed inside a weapon or armor
  *   notebox, the user will have that passive state.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.02:
+ * - Optimized passive state calculations to reduce lag.
+ *
+ * Version 1.01:
+ * - Fixed a bug with having multiple passive states of the same ID.
+ *
+ * Version 1.00:
+ * - Finished plugin!
  */
 //=============================================================================
 
@@ -86,11 +98,17 @@ DataManager.processAPSNotetags = function(group) {
 // Game_BattlerBase
 //=============================================================================
 
+Yanfly.APS.Game_BattlerBase_refresh = Game_BattlerBase.prototype.refresh;
+Game_BattlerBase.prototype.refresh = function() {
+    Yanfly.APS.Game_BattlerBase_refresh.call(this);
+    this._passiveStatesRaw = undefined;
+};
+
 Yanfly.APS.Game_BattlerBase_states = Game_BattlerBase.prototype.states;
 Game_BattlerBase.prototype.states = function() {
     var array = Yanfly.APS.Game_BattlerBase_states.call(this);
     array = array.concat(this.passiveStates());
-    this.sortPassiveStates(array.filter(Yanfly.Util.onlyUnique));
+    this.sortPassiveStates(array);
     return array;
 };
 
@@ -105,7 +123,7 @@ Game_BattlerBase.prototype.passiveStates = function() {
     var array = [];
     for (var i = 0; i < this.passiveStatesRaw().length; ++i) {
       var state = $dataStates[this.passiveStatesRaw()[i]];
-      if (state) array.push(state);
+      if (state && !array.contains(state)) array.push(state);
     }
     return array;
 };
@@ -159,6 +177,7 @@ Game_Battler.prototype.removeState = function(stateId) {
 //=============================================================================
 
 Game_Actor.prototype.passiveStatesRaw = function() {
+    if (this._passiveStatesRaw !== undefined) return this._passiveStatesRaw;
     var array = Game_BattlerBase.prototype.passiveStatesRaw.call(this);
     array = array.concat(this.getPassiveStateData(this.actor()));
     array = array.concat(this.getPassiveStateData(this.currentClass()));
@@ -170,7 +189,8 @@ Game_Actor.prototype.passiveStatesRaw = function() {
       var skill = $dataSkills[this._skills[i]];
       array = array.concat(this.getPassiveStateData(skill));
     }
-    return array;
+    this._passiveStatesRaw = array.filter(Yanfly.Util.onlyUnique)
+    return this._passiveStatesRaw;
 };
 
 //=============================================================================
@@ -178,13 +198,15 @@ Game_Actor.prototype.passiveStatesRaw = function() {
 //=============================================================================
 
 Game_Enemy.prototype.passiveStatesRaw = function() {
+    if (this._passiveStatesRaw !== undefined) return this._passiveStatesRaw;
     var array = Game_BattlerBase.prototype.passiveStatesRaw.call(this);
     array = array.concat(this.getPassiveStateData(this.enemy()));
     for (var i = 0; i < this.skills().length; ++i) {
       var skill = this.skills()[i];
       array = array.concat(this.getPassiveStateData(skill));
     }
-    return array;
+    this._passiveStatesRaw = array.filter(Yanfly.Util.onlyUnique)
+    return this._passiveStatesRaw;
 };
 
 if (!Game_Enemy.prototype.skills) {

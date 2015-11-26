@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Main Menu Core
 // YEP_MainMenuManager.js
-// Version: 1.00
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,8 +11,8 @@ Yanfly.MMM = Yanfly.MMM || {};
 
 //=============================================================================
  /*:
- * @plugindesc This plugin allows you to manage the various aspects of
- * your main menu.
+ * @plugindesc v1.02 This plugin allows you to manage the various aspects
+ * of your main menu.
  * @author Yanfly Engine Plugins
  *
  * @param ---Command---
@@ -42,6 +41,21 @@ Yanfly.MMM = Yanfly.MMM || {};
  * @desc This is the command window width in pixels.
  * Default: 240
  * @default 240
+ *
+ * @param Hide Actor Window
+ * @desc Do you wish to hide the main actor window?
+ * NO - false     YES - true
+ * @default false
+ *
+ * @param Hide Gold Window
+ * @desc Do you wish to hide the gold window?
+ * NO - false     YES - true
+ * @default false
+ *
+ * @param Blurry Background
+ * @desc Do you wish to have a blurry background?
+ * NO - false     YES - true     Default: true
+ * @default true
  *
  * @param ---Menu 1---
  * @default
@@ -3609,7 +3623,7 @@ Yanfly.MMM = Yanfly.MMM || {};
  * The following are some examples to help you add/alter/change the way
  * commands appear for your main menu.
  *
- * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+ * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  *
  *       Name: TextManager.item
  *     Symbol: item
@@ -3683,6 +3697,20 @@ Yanfly.MMM = Yanfly.MMM || {};
  * function included in this plugin to allow for common events to be ran.
  *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.02:
+ * - The gold window will now match the command window's width.
+ *
+ * Version 1.01:
+ * - Added 'Hide Actor Window', 'Hide Gold Window', 'Blurry Background'
+ * parameters for the plugin settings.
+ *
+ * Version 1.00:
+ * - Finished plugin!
  */
 //=============================================================================
 
@@ -3698,6 +3726,9 @@ Yanfly.Param.MMMCmdPosition = String(Yanfly.Parameters['Command Position']);
 Yanfly.Param.MMMCmdCols = String(Yanfly.Parameters['Command Columns']);
 Yanfly.Param.MMMCmdRows = String(Yanfly.Parameters['Command Rows']);
 Yanfly.Param.MMMCmdWidth = String(Yanfly.Parameters['Command Width']);
+Yanfly.Param.MMMHideActorWin = String(Yanfly.Parameters['Hide Actor Window']);
+Yanfly.Param.MMMHideGoldWin = String(Yanfly.Parameters['Hide Gold Window']);
+Yanfly.Param.MMMBlurryBG = String(Yanfly.Parameters['Blurry Background']);
 Yanfly.MMM.Name = {};
 Yanfly.MMM.Symbol = {};
 Yanfly.MMM.Show = {};
@@ -3720,6 +3751,19 @@ for (Yanfly.i = 1; Yanfly.i <= 100; ++Yanfly.i) {
   Yanfly.MMM.MainBind[Yanfly.i] = eval(Yanfly.line);
   Yanfly.line = "String(Yanfly.Parameters['Menu " + Yanfly.i + " Actor Bind'])";
   Yanfly.MMM.ActorBind[Yanfly.i] = eval(Yanfly.line);
+};
+
+//=============================================================================
+// SceneManager
+//=============================================================================
+
+Yanfly.MMM.SceneManager_snapForBackground = SceneManager.snapForBackground;
+SceneManager.snapForBackground = function() {
+    if (eval(Yanfly.Param.MMMBlurryBG)) {
+      Yanfly.MMM.SceneManager_snapForBackground.call(this);
+    } else {
+      this._backgroundBitmap = this.snap();
+    }
 };
 
 //=============================================================================
@@ -3823,6 +3867,20 @@ Scene_Menu.prototype.createCommandWindow = function() {
     this.addWindow(this._commandWindow);
 };
 
+Yanfly.MMM.Scene_Menu_createGoldWindow =
+    Scene_Menu.prototype.createGoldWindow;
+Scene_Menu.prototype.createGoldWindow = function() {
+    Yanfly.MMM.Scene_Menu_createGoldWindow.call(this);
+    if (eval(Yanfly.Param.MMMHideGoldWin)) this._goldWindow.hide();
+};
+
+Yanfly.MMM.Scene_Menu_createStatusWindow =
+    Scene_Menu.prototype.createStatusWindow;
+Scene_Menu.prototype.createStatusWindow = function() {
+    Yanfly.MMM.Scene_Menu_createStatusWindow.call(this);
+    if (eval(Yanfly.Param.MMMHideActorWin)) this._statusWindow.hide();
+};
+
 Scene_Menu.prototype.createCommandWindowBinds = function() {
   this._actorBinds = {};
   for (var i = 1; i <= 100; ++i) {
@@ -3837,7 +3895,14 @@ Scene_Menu.prototype.createCommandWindowBinds = function() {
   }
 };
 
+Scene_Menu.prototype.resizeGoldWindow = function() {
+    this._goldWindow.width = this._commandWindow.width;
+    this._goldWindow.createContents();
+    this._goldWindow.refresh();
+};
+
 Scene_Menu.prototype.repositionWindows = function() {
+    this.resizeGoldWindow();
     if (Yanfly.Param.MMMCmdPosition === 'right') {
       this._commandWindow.x = Graphics.boxWidth - this._commandWindow.width;
       this._goldWindow.x = Graphics.boxWidth - this._goldWindow.width;
@@ -3849,11 +3914,23 @@ Scene_Menu.prototype.repositionWindows = function() {
     }
 };
 
+Yanfly.MMM.Scene_Menu_commandPersonal = Scene_Menu.prototype.commandPersonal;
+Scene_Menu.prototype.commandPersonal = function() {
+    Yanfly.MMM.Scene_Menu_commandPersonal.call(this);
+    this._statusWindow.show();
+};
+
 Scene_Menu.prototype.onPersonalOk = function() {
     var symbol = this._commandWindow.currentSymbol();
     var actorBind = this._actorBinds[symbol];
     if (!actorBind) return;
     eval(actorBind);
+};
+
+Yanfly.MMM.Scene_Menu_onPersonalCancel = Scene_Menu.prototype.onPersonalCancel;
+Scene_Menu.prototype.onPersonalCancel = function() {
+    Yanfly.MMM.Scene_Menu_onPersonalCancel.call(this);
+    if (eval(Yanfly.Param.MMMHideActorWin)) this._statusWindow.hide();
 };
 
 Scene_Menu.prototype.callCommonEvent = function() {

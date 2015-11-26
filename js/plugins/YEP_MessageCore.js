@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Message Core
 // YEP_MessageCore.js
-// Version: 1.01
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,7 +11,7 @@ Yanfly.Message = Yanfly.Message || {};
 
 //=============================================================================
  /*:
- * @plugindesc v1.01 Adds more features to the Message Window to customized
+ * @plugindesc v1.04 Adds more features to the Message Window to customized
  * the way your messages appear and functions.
  * @author Yanfly Engine Plugins
  *
@@ -277,6 +276,20 @@ Yanfly.Message = Yanfly.Message || {};
  * Changelog
  * ============================================================================
  *
+ * Version 1.04:
+ * - Fixed a bug that captured too many text codes with the namebox window.
+ * - Timed Name Window's closing speed with main window's closing speed.
+ *
+ * Verison 1.03:
+ * - Fixed a bug with textcodes that messed up wordwrapping.
+ * - Fixed a bug with font reset, italic, and bold textcodes.
+ *
+ * Version 1.02:
+ * - Namebox Window's overlap feature that's in every MV window is now disabled
+ * to allow for overlapping with main message window.
+ * - Updated window positioning for Branch Choices, Number Input, and Item
+ * Selection windows.
+ *
  * Version 1.01:
  * - Added 'Description Wrap' into the parameters to allow for all item
  * descriptions to be automatically processed with word wrapping.
@@ -464,6 +477,10 @@ Window_Base.prototype.setWordWrap = function(text) {
 };
 
 Window_Base.prototype.convertExtraEscapeCharacters = function(text) {
+		// Font Codes
+		text = text.replace(/\x1bFR/gi, '\x1bMSGCORE[0]');
+		text = text.replace(/\x1bFB/gi, '\x1bMSGCORE[1]');
+		text = text.replace(/\x1bFI/gi, '\x1bMSGCORE[2]');
 		// \AC[n]
 		text = text.replace(/\x1bAC\[(\d+)\]/gi, function() {
 				return this.actorClassName(parseInt(arguments[1]));
@@ -557,7 +574,7 @@ Window_Base.prototype.escapeIconItem = function(n, database) {
 };
 
 Window_Base.prototype.obtainEscapeString = function(textState) {
-    var arr = /^\<(.*)\>/.exec(textState.text.slice(textState.index));
+    var arr = /^\<(.*?)\>/.exec(textState.text.slice(textState.index));
     if (arr) {
         textState.index += arr[0].length;
         return String(arr[0].slice(1, arr[0].length - 1));
@@ -570,9 +587,12 @@ Yanfly.Message.Window_Base_processEscapeCharacter =
 		Window_Base.prototype.processEscapeCharacter;
 Window_Base.prototype.processEscapeCharacter = function(code, textState) {
 		switch (code) {
-		case 'FR':
-        this.resetFontSettings();
-        break;
+		case 'MSGCORE':
+				var id = this.obtainEscapeParam(textState);
+				if (id === 0) this.resetFontSettings();
+				if (id === 1) this.contents.fontBold = !this.contents.fontBold;
+				if (id === 2) this.contents.fontItalic = !this.contents.fontItalic;
+				break;
 		case 'FS':
         this.contents.fontSize = this.obtainEscapeParam(textState);
         break;
@@ -580,12 +600,6 @@ Window_Base.prototype.processEscapeCharacter = function(code, textState) {
 				var name = this.obtainEscapeString(textState);
 				this.contents.fontFace = name;
         break;
-		case 'FB':
-				this.contents.fontBold = !this.contents.fontBold;
-				break;
-		case 'FI':
-				this.contents.fontItalic = !this.contents.fontItalic;
-				break;
 		case 'OC':
 				var id = this.obtainEscapeParam(textState);
         this.contents.outlineColor = this.textColor(id);
@@ -633,7 +647,7 @@ Window_Base.prototype.checkWordWrap = function(textState) {
 			if (nextSpace < 0) nextSpace = textState.text.length + 1;
 			if (nextBreak > 0) nextSpace = Math.min(nextSpace, nextBreak);
 			var word = textState.text.substring(textState.index, nextSpace);
-			var size = this.textWidth(word);
+			var size = this.textWidthExCheck(word);
 		}
 		return (size + textState.x > this.contents.width);
 };
@@ -706,6 +720,56 @@ Window_ChoiceList.prototype.standardFontSize = function() {
     return Yanfly.Param.MSGFontSize;
 };
 
+Yanfly.Message.Window_ChoiceList_updatePlacement =
+		Window_ChoiceList.prototype.updatePlacement;
+Window_ChoiceList.prototype.updatePlacement = function() {
+		Yanfly.Message.Window_ChoiceList_updatePlacement.call(this);
+		var messagePosType = $gameMessage.positionType();
+		if (messagePosType === 0) {
+			this.y = this._messageWindow.height;
+		} else if (messagePosType === 2) {
+			this.y = Graphics.boxHeight - this._messageWindow.height - this.height;
+		}
+};
+
+//=============================================================================
+// Window_NumberInput
+//=============================================================================
+
+Yanfly.Message.Window_NumberInput_updatePlacement =
+		Window_NumberInput.prototype.updatePlacement;
+Window_NumberInput.prototype.updatePlacement = function() {
+    Yanfly.Message.Window_NumberInput_updatePlacement.call(this);
+		var messagePosType = $gameMessage.positionType();
+		if (messagePosType === 0) {
+			this.y = this._messageWindow.height;
+		} else if (messagePosType === 1) {
+			if (messageY >= Graphics.boxHeight / 2) {
+					this.y = messageY - this.height;
+			} else {
+					this.y = messageY + this._messageWindow.height;
+			}
+		} else if (messagePosType === 2) {
+			this.y = Graphics.boxHeight - this._messageWindow.height - this.height;
+		}
+};
+
+//=============================================================================
+// Window_EventItem
+//=============================================================================
+
+Yanfly.Message.Window_EventItem_updatePlacement =
+		Window_EventItem.prototype.updatePlacement;
+Window_EventItem.prototype.updatePlacement = function() {
+    Yanfly.Message.Window_EventItem_updatePlacement.call(this);
+		var messagePosType = $gameMessage.positionType();
+		if (messagePosType === 0) {
+			this.y = Graphics.boxHeight - this.height;
+		} else if (messagePosType === 2) {
+			this.y = 0;
+		}
+};
+
 //=============================================================================
 // Window_ScrollText
 //=============================================================================
@@ -722,6 +786,8 @@ Window_ScrollText.prototype.standardFontSize = function() {
 // Window_NameBox
 //=============================================================================
 
+Yanfly.DisableWebGLMask = false;
+
 function Window_NameBox() {
     this.initialize.apply(this, arguments);
 }
@@ -731,6 +797,7 @@ Window_NameBox.prototype.constructor = Window_NameBox;
 
 Window_NameBox.prototype.initialize = function(parentWindow) {
     this._parentWindow = parentWindow;
+		this._ignoreMask = true
     Window_Base.prototype.initialize.call(this, 0, 0, 240, this.windowHeight());
 		this._text = '';
 		this._openness = 0;
@@ -740,6 +807,13 @@ Window_NameBox.prototype.initialize = function(parentWindow) {
 			this.backOpacity = 0;
 			this.opacity = 0;
 		}
+};
+
+Yanfly.Message.WindowLayer_webglMaskWindow =
+		WindowLayer.prototype._webglMaskWindow;
+WindowLayer.prototype._webglMaskWindow = function(renderSession, win) {
+    if (win._ignoreMask) return;
+    Yanfly.Message.WindowLayer_webglMaskWindow.call(this, renderSession, win);
 };
 
 Window_NameBox.prototype.windowWidth = function() {
@@ -775,6 +849,9 @@ Window_NameBox.prototype.update = function() {
 		if (this.isClosed()) return;
 		if (this.isClosing()) return;
 		if (this._closeCounter-- > 0) return;
+		if (this._parentWindow.isClosing()) {
+			this._openness = this._parentWindow.openness;
+		}
 		this.close();
 };
 
@@ -960,28 +1037,28 @@ Window_Message.prototype.convertEscapeCharacters = function(text) {
 };
 
 Window_Message.prototype.convertNameBox = function(text) {
-		text = text.replace(/\x1bN\<(.*)\>/gi, function() {
+		text = text.replace(/\x1bN\<(.*?)\>/gi, function() {
 				return Yanfly.nameWindow.refresh(arguments[1], 1);
 		}, this);
-		text = text.replace(/\x1bN1\<(.*)\>/gi, function() {
+		text = text.replace(/\x1bN1\<(.*?)\>/gi, function() {
 				return Yanfly.nameWindow.refresh(arguments[1], 1);
 		}, this);
-		text = text.replace(/\x1bN2\<(.*)\>/gi, function() {
+		text = text.replace(/\x1bN2\<(.*?)\>/gi, function() {
 				return Yanfly.nameWindow.refresh(arguments[1], 2);
 		}, this);
-		text = text.replace(/\x1bN3\<(.*)\>/gi, function() {
+		text = text.replace(/\x1bN3\<(.*?)\>/gi, function() {
 				return Yanfly.nameWindow.refresh(arguments[1], 3);
 		}, this);
-		text = text.replace(/\x1bNC\<(.*)\>/gi, function() {
+		text = text.replace(/\x1bNC\<(.*?)\>/gi, function() {
 				return Yanfly.nameWindow.refresh(arguments[1], 3);
 		}, this);
-		text = text.replace(/\x1bN4\<(.*)\>/gi, function() {
+		text = text.replace(/\x1bN4\<(.*?)\>/gi, function() {
 				return Yanfly.nameWindow.refresh(arguments[1], 4);
 		}, this);
-		text = text.replace(/\x1bN5\<(.*)\>/gi, function() {
+		text = text.replace(/\x1bN5\<(.*?)\>/gi, function() {
 				return Yanfly.nameWindow.refresh(arguments[1], 5);
 		}, this);
-		text = text.replace(/\x1bNR\<(.*)\>/gi, function() {
+		text = text.replace(/\x1bNR\<(.*?)\>/gi, function() {
 				return Yanfly.nameWindow.refresh(arguments[1], 5);
 		}, this);
     return text;

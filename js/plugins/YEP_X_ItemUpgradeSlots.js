@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Item Core Extension - Item Upgrade Slots
 // YEP_X_ItemUpgradeSlots.js
-// Version: 1.00
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,8 +11,8 @@ Yanfly.IUS = Yanfly.IUS || {};
 
 //=============================================================================
  /*:
- * @plugindesc (Requires YEP_ItemCore.js) Allows independent items to be
- * upgradeable and gain better stats.
+ * @plugindesc v1.02 (Requires YEP_ItemCore.js) Allows independent items to
+ * be upgradeable and gain better stats.
  * @author Yanfly Engine Plugins
  *
  * @param Default Slots
@@ -28,6 +27,11 @@ Yanfly.IUS = Yanfly.IUS || {};
  * @desc Command text for upgrading the selected item. If you don't
  * wish for this to appear, keep this blank.    %1 - Item Name
  * @default Upgrade %1
+ *
+ * @param Show Only
+ * @desc The Upgrade Command will only show if item is upgradeable.
+ * NO - false     YES - true
+ * @default true
  *
  * @param Slots Available
  * @desc Text used for amount of upgrade slots available. To hide
@@ -179,6 +183,20 @@ Yanfly.IUS = Yanfly.IUS || {};
  *   EnableItemUpgrade  - Enables the upgrade option in the item menu.
  *
  * You can use those Plugin Commands at any time to adjust the upgrade option.
+ *
+ * ============================================================================
+ * Changelog
+ * ============================================================================
+ *
+ * Version 1.02:
+ * - Fixed a bug that prevented upgrading if the only effect is boosting.
+ *
+ * Version 1.01:
+ * - Added 'Show Only' parameter. This will cause the upgrade command to only
+ * appear if the item can be upgraded.
+ *
+ * Version 1.00:
+ * - Finished plugin!
  */
 //=============================================================================
 
@@ -194,6 +212,7 @@ Yanfly.Param = Yanfly.Param || {};
 Yanfly.Param.IUSDefaultSlots = Number(Yanfly.Parameters['Default Slots']);
 Yanfly.Param.IUSSlotVariance = Number(Yanfly.Parameters['Slot Variance']);
 Yanfly.Param.IUSUpgradeCmd = String(Yanfly.Parameters['Upgrade Command']);
+Yanfly.Param.IUSShowOnly = String(Yanfly.Parameters['Show Only']);
 Yanfly.Param.IUSSlotsText = String(Yanfly.Parameters['Slots Available']);
 Yanfly.Param.IUSShowSlots = String(Yanfly.Parameters['Show Slot Upgrades']);
 Yanfly.Param.IUSSlotFmt = String(Yanfly.Parameters['Slot Upgrade Format']);
@@ -295,8 +314,10 @@ ItemManager.initSlotUpgradeNotes = function(item) {
         upgradeEffect = false;
       } else if (upgradeEffect && line.match(note4)) {
         item.upgradeSlotCost = parseInt(RegExp.$1);
+        item.upgradeEffect.push('');
       } else if (upgradeEffect && line.match(note5)) {
         item.boostCountValue = parseInt(RegExp.$1);
+        item.upgradeEffect.push('');
       } else if (upgradeEffect) {
         item.upgradeEffect.push(line);
       } else if (line.match(note6)) {
@@ -869,6 +890,7 @@ Window_ItemActionCommand.prototype.addUpgradeCommand = function() {
     if (Yanfly.Param.IUSUpgradeCmd === '') return;
     if (!$gameSystem.itemUpgradeShow()) return;
     var enabled = DataManager.isIndependent(this._item);
+    if (eval(Yanfly.Param.IUSShowOnly) && !enabled) return;
     if (!$gameSystem.itemUpgradeEnabled()) enabled = false;
     var fmt = Yanfly.Param.IUSUpgradeCmd;
     text = '\\i[' + this._item.iconIndex + ']' + this._item.name;

@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Base Troop Events
 // YEP_BaseTroopEvents.js
-// Version: 1.00
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,8 +11,8 @@ Yanfly.BTE = Yanfly.BTE || {};
 
 //=============================================================================
 /*:
- * @plugindesc Enabling this plugin will cause all troops to have events
- * occur in every fight.
+ * @plugindesc v1.00 Enabling this plugin will cause all troops to have
+ * events occur in every fight.
  * @author Yanfly Engine Plugins
  *
  * @param Base Troop ID

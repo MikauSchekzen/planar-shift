@@ -1,7 +1,6 @@
 //=============================================================================
 // Yanfly Engine Plugins - Region Restrictions
 // YEP_RegionRestrictions.js
-// Version: 1.00
 //=============================================================================
 
 var Imported = Imported || {};
@@ -12,7 +11,7 @@ Yanfly.RR = Yanfly.RR || {};
 
 //=============================================================================
  /*:
- * @plugindesc Use regions to block out Events and/or the player from
+ * @plugindesc v1.00 Use regions to block out Events and/or the player from
  * being able to venture into those spots.
  * @author Yanfly Engine Plugins
  *
@@ -57,8 +56,8 @@ Yanfly.RR = Yanfly.RR || {};
  * they'll be unable to move past it unless they have Through on. Likewise,
  * there are regions that you can prevent the player from moving onto, too!
  *
- * A new change from the RPG Maker VX Ace version of this plugin is now, there
- * exist Regions that can allow players and events to always travel through.
+ * A new change from the RPG Maker VX Ace version is that now there exist
+ * Regions that can allow players and events to always travel through.
  */
 //=============================================================================
 
